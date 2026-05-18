@@ -50,7 +50,11 @@ class LwAiSearch extends LitElement {
   //
   // Every attribute that starts with "btn-" is auto-mapped.
   // You can also pass arbitrary CSS vars:
-  //   <lw-ai-search css-vars="--modal-accent:#e03f00; --result-title-size:20px"></lw-ai-search>
+  //  declare a class in the css file of the liquid file when <lw-ai-search class = "lw-ai-search"> element is present 
+  //  target any component by creating a class like
+  //  .lw-ai-search::part(ai-search-subtext){
+  //    text-decoration : underline;
+  //  }
   //
   // ── OBSERVED ATTRIBUTES ─────────────────────────────────────────────
   // Attribute → CSS custom property mapping.
@@ -60,7 +64,7 @@ class LwAiSearch extends LitElement {
   //
   // BUTTON attrs    → control .ai-search-btn and related elements
   // CONTAINER attrs → control .ai-search-container wrapper
-  // css-vars        → freeform escape hatch: "key:val; key:val"
+  // 
   //
   // Usage in liquid:
   //   <lw-ai-search
@@ -124,8 +128,6 @@ class LwAiSearch extends LitElement {
     containerPadding:    { attribute: 'container-padding'     },
     containerMargin:     { attribute: 'container-margin'      },
     containerWidth : {attribute: 'container-width'},
-    // freeform
-    cssVars:             { attribute: 'css-vars'              },
   };
 
   constructor() {
@@ -192,14 +194,6 @@ class LwAiSearch extends LitElement {
             this.style.setProperty(`--lw-${name}`, value);
         }
 
-        if (name === 'css-vars' && value) {
-            value.split(';').forEach(pair => {
-            const [k, ...rest] = pair.split(':');
-            if (k && rest.length) {
-                this.style.setProperty(k.trim(), rest.join(':').trim());
-            }
-            });
-        }
     }
 
 

@@ -109,42 +109,42 @@ function mergeTheme(base, override) {
 // nested theme object that is easier to consume in its templates and styles.
 // Accept both ASP.NET's usual camelCase JSON and the DTO's PascalCase names.
 const BACKEND_THEME_MAP = {
-  WidgetStyle:                   ['widget', 'style'],
-  WidgetPosition:                ['widget', 'position'],
-  HelperText:                    ['widget', 'helperText'],
-  WidgetBackgroundColor:         ['widget', 'backgroundColor'],
-  WidgetIconColor:               ['widget', 'iconColor'],
-  ButtonBackgroundColor:         ['button', 'backgroundColor'],
-  ButtonTextColor:               ['button', 'textColor'],
-  ButtonOutlineColor:            ['button', 'outlineColor'],
-  ButtonOutlineThickness:        ['button', 'outlineThickness'],
-  ButtonCornerRadius:            ['cornerRadius'],
-  SuggestedQuestionsStyle:       ['suggestedQuestionsStyle'],
-  SearchDisplayMode:             ['searchDisplayMode'],
-  QuestionsFontFamily:           ['questions', 'fontFamily'],
-  QuestionsTextColor:            ['questions', 'textColor'],
-  QuestionsBackgroundColor:      ['questions', 'backgroundColor'],
-  SearchPageBackgroundColor:     ['page', 'backgroundColor'],
-  CloseIconColor:                ['closeIcon', 'color'],
-  SearchCardBackgroundColor:     ['card', 'backgroundColor'],
-  SearchCardTextColor:           ['card', 'textColor'],
-  SearchCardCornerRadius:        ['card', 'cornerRadius'],
-  LogoImageUrl:                  ['logo', 'image'],
-  HeaderText:                    ['text', 'header', 'text'],
-  HeaderTextFontFamily:          ['text', 'header', 'fontFamily'],
-  HeaderTextColor:               ['text', 'header', 'color'],
-  SubtitleText:                  ['text', 'subtitle', 'text'],
-  SubtitleTextFontFamily:        ['text', 'subtitle', 'fontFamily'],
-  SubtitleTextColor:             ['text', 'subtitle', 'color'],
-  SearchText:                    ['text', 'search', 'placeholder'],
-  ResultsHeadingFontFamily:      ['results', 'headings', 'fontFamily'],
-  ResultsHeadingFontColor:       ['results', 'headings', 'color'],
-  ResultsBlogTitleFontFamily:    ['results', 'blogTitle', 'fontFamily'],
-  ResultsBlogTitleFontColor:     ['results', 'blogTitle', 'color'],
-  ResultsBodyTextFontFamily:     ['results', 'bodyText', 'fontFamily'],
-  ResultsBodyTextFontColor:      ['results', 'bodyText', 'color'],
-  ResultsChipBackgroundColor:    ['results', 'chip', 'backgroundColor'],
-  ResultsChipFontColor:          ['results', 'chip', 'color'],
+  WidgetStyle: ['widget', 'style'],
+  WidgetPosition: ['widget', 'position'],
+  HelperText: ['widget', 'helperText'],
+  WidgetBackgroundColor: ['widget', 'backgroundColor'],
+  WidgetIconColor: ['widget', 'iconColor'],
+  ButtonBackgroundColor: ['button', 'backgroundColor'],
+  ButtonTextColor: ['button', 'textColor'],
+  ButtonOutlineColor: ['button', 'outlineColor'],
+  ButtonOutlineThickness: ['button', 'outlineThickness'],
+  ButtonCornerRadius: ['cornerRadius'],
+  SuggestedQuestionsStyle: ['suggestedQuestionsStyle'],
+  SearchDisplayMode: ['searchDisplayMode'],
+  QuestionsFontFamily: ['questions', 'fontFamily'],
+  QuestionsTextColor: ['questions', 'textColor'],
+  QuestionsBackgroundColor: ['questions', 'backgroundColor'],
+  SearchPageBackgroundColor: ['page', 'backgroundColor'],
+  CloseIconColor: ['closeIcon', 'color'],
+  SearchCardBackgroundColor: ['card', 'backgroundColor'],
+  SearchCardTextColor: ['card', 'textColor'],
+  SearchCardCornerRadius: ['card', 'cornerRadius'],
+  LogoImageUrl: ['logo', 'image'],
+  HeaderText: ['text', 'header', 'text'],
+  HeaderTextFontFamily: ['text', 'header', 'fontFamily'],
+  HeaderTextColor: ['text', 'header', 'color'],
+  SubtitleText: ['text', 'subtitle', 'text'],
+  SubtitleTextFontFamily: ['text', 'subtitle', 'fontFamily'],
+  SubtitleTextColor: ['text', 'subtitle', 'color'],
+  SearchText: ['text', 'search', 'placeholder'],
+  ResultsHeadingFontFamily: ['results', 'headings', 'fontFamily'],
+  ResultsHeadingFontColor: ['results', 'headings', 'color'],
+  ResultsBlogTitleFontFamily: ['results', 'blogTitle', 'fontFamily'],
+  ResultsBlogTitleFontColor: ['results', 'blogTitle', 'color'],
+  ResultsBodyTextFontFamily: ['results', 'bodyText', 'fontFamily'],
+  ResultsBodyTextFontColor: ['results', 'bodyText', 'color'],
+  ResultsChipBackgroundColor: ['results', 'chip', 'backgroundColor'],
+  ResultsChipFontColor: ['results', 'chip', 'color'],
 };
 
 const BACKEND_LENGTH_FIELDS = new Set([
@@ -225,9 +225,9 @@ function isUnsetThemeValue(value) {
 function isTransparentColor(value) {
   const v = String(value ?? '').trim().toLowerCase();
   return v === 'transparent'
-      || /^#[0-9a-f]{6}00$/.test(v)
-      || /^#[0-9a-f]{3}0$/.test(v)
-      || /^rgba\(\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+\s*,\s*0*\.?0+\s*\)$/.test(v);
+    || /^#[0-9a-f]{6}00$/.test(v)
+    || /^#[0-9a-f]{3}0$/.test(v)
+    || /^rgba\(\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+\s*,\s*0*\.?0+\s*\)$/.test(v);
 }
 
 function copyConfiguredTheme(value) {
@@ -481,9 +481,9 @@ import '../lw-blog-overview/lw-blog-overview.js';
 // one. A single shared popstate listener owns this: per-instance
 // listeners would race, because the history.back() used to close one
 // modal arrives after another may already have opened.
-let activeModal   = null;
+let activeModal = null;
 let pendingSelfPop = 0;
-let popBound      = false;
+let popBound = false;
 
 function bindPopstate() {
   if (popBound) return;
@@ -530,29 +530,29 @@ export class LwAiSearch extends LitElement {
 
   static properties = {
     // search API config — same attribute names as <lw-ai-search>
-    searchBase:  { type: String, attribute: 'search-base'  },
-    searchKey:   { type: String, attribute: 'search-key'   },
+    searchBase: { type: String, attribute: 'search-base' },
+    searchKey: { type: String, attribute: 'search-key' },
     searchIndex: { type: String, attribute: 'search-index' },
     semanticRatio: { type: Number, attribute: 'semantic-ratio' },
     searchPlaceholder: { type: String, attribute: 'search-placeholder' },
-    theme:            { type: Object },
+    theme: { type: Object },
     // Overview shown above the results, rendered by <lw-blog-overview>
-    overviewHeading:    { type: String, attribute: 'overview-heading'    },
-    overviewCitations:  { type: String, attribute: 'overview-citations'  },
-    overviewParagraphs: { type: Array,  attribute: 'overview-paragraphs' },
-    modalTop:          { type: String, attribute: 'modal-top' },
+    overviewHeading: { type: String, attribute: 'overview-heading' },
+    overviewCitations: { type: String, attribute: 'overview-citations' },
+    overviewParagraphs: { type: Array, attribute: 'overview-paragraphs' },
+    modalTop: { type: String, attribute: 'modal-top' },
 
-    href:       { type: String                            },
-    target:     { type: String                            },
-    queryParam: { type: String,  attribute: 'query-param' },
-    ctaLabel:   { type: String,  attribute: 'cta-label'  },
-    ctaHref:    { type: String,  attribute: 'cta-href'   },
-    ctaTarget:  { type: String,  attribute: 'cta-target' },
-    trigger:    { type: String                           },
-    btnType:    { type: String,  attribute: 'btn-type', reflect: true },
-    btnLabel:   { type: String,  attribute: 'btn-label'   },
-    widgetStyle:{ type: String,  attribute: 'widget-style' },
-    searchDisplay:{ type: String, attribute: 'search-display' },
+    href: { type: String },
+    target: { type: String },
+    queryParam: { type: String, attribute: 'query-param' },
+    ctaLabel: { type: String, attribute: 'cta-label' },
+    ctaHref: { type: String, attribute: 'cta-href' },
+    ctaTarget: { type: String, attribute: 'cta-target' },
+    trigger: { type: String },
+    btnType: { type: String, attribute: 'btn-type', reflect: true },
+    btnLabel: { type: String, attribute: 'btn-label' },
+    widgetStyle: { type: String, attribute: 'widget-style' },
+    searchDisplay: { type: String, attribute: 'search-display' },
     // On by default: the card is how a reader of a site running the
     // widget is offered DiscoverAI, so it belongs wherever the widget
     // runs rather than only where someone remembered an attribute.
@@ -567,35 +567,35 @@ export class LwAiSearch extends LitElement {
         toAttribute: v => (v ? '' : 'false'),
       },
     },
-    feedbackCta:   { type: String, attribute: 'feedback-cta' },
+    feedbackCta: { type: String, attribute: 'feedback-cta' },
     feedbackCtaPage: { type: String, attribute: 'feedback-cta-page' },
-    feedbackUrl:   { type: String, attribute: 'feedback-url' },
+    feedbackUrl: { type: String, attribute: 'feedback-url' },
     // A hosted form to show instead of the built-in one -- a Formbricks
     // link survey, say. Passed straight through to the card.
     feedbackEmbed: { type: String, attribute: 'feedback-embed' },
-    btnSubtext: { type: String,  attribute: 'btn-subtext' },
-    label:      { type: String                           },
-    open:       { type: Boolean, reflect: true           },
-    _dismissed: { state: true                            },
+    btnSubtext: { type: String, attribute: 'btn-subtext' },
+    label: { type: String },
+    open: { type: Boolean, reflect: true },
+    _dismissed: { state: true },
 
     // modal state — modalOpen is reflected so the host can lift its
     // z-index above the page while the overlay is up
-    modalOpen:     { type: Boolean, reflect: true, attribute: 'modal-open' },
+    modalOpen: { type: Boolean, reflect: true, attribute: 'modal-open' },
     _showFeatures: { state: true },
-    _showResults:  { state: true },
+    _showResults: { state: true },
     _resultsReady: { state: true },
-    _postCommit:   { state: true },
+    _postCommit: { state: true },
     _feedbackOpen: { state: true },
-    _results:      { state: true },
-    _loading:      { state: true },
-    _noResults:    { state: true },
+    _results: { state: true },
+    _loading: { state: true },
+    _noResults: { state: true },
     _noResultsMsg: { state: true },
-    _metaVisible:  { state: true },
-    _metaHits:     { state: true },
-    _metaTime:     { state: true },
-    _inputValue:   { state: true },
-    _summaryText:  { state: true },
-    _summaryHits:  { state: true },
+    _metaVisible: { state: true },
+    _metaHits: { state: true },
+    _metaTime: { state: true },
+    _inputValue: { state: true },
+    _summaryText: { state: true },
+    _summaryHits: { state: true },
     // Per-section overview + citations from the non-streaming /summary
     // endpoint (see _fetchSummary / _mapAnswerToParagraphs).
     _summaryParagraphs: { state: true },
@@ -608,12 +608,12 @@ export class LwAiSearch extends LitElement {
     // response — forwarded as-is to /summary and /summary/stream, see
     // _fetchSummary / _fetchSummaryStream.
     promptType: { state: true },
-    _barMode:      { state: true },
+    _barMode: { state: true },
     _barMinimized: { state: true },
     _chipRowCopies: { state: true },
     _displayOverride: { state: true },
-    barMode:       { type: String, attribute: 'bar-mode' },
-    barPlaceholder:{ type: String, attribute: 'bar-placeholder' },
+    barMode: { type: String, attribute: 'bar-mode' },
+    barPlaceholder: { type: String, attribute: 'bar-placeholder' },
   };
 
   // Page size for each search request.
@@ -2176,27 +2176,27 @@ export class LwAiSearch extends LitElement {
   constructor() {
     super();
     // search API config, mirroring <lw-ai-search>
-    this.searchBase    = '';
-    this.searchKey     = '';
-    this.searchIndex   = 'all';
+    this.searchBase = '';
+    this.searchKey = '';
+    this.searchIndex = 'all';
     this.semanticRatio = 0.5;
     this.searchPlaceholder = 'Ask a question to get instant AI answer';
-    this.theme            = {};
-    this._backendTheme    = {};
+    this.theme = {};
+    this._backendTheme = {};
     this._backendQuestions = [];
     this._backendCitationsStyle = null;
     this.promptType = null;
-    this.overviewHeading    = 'AI Answer';
-    this.overviewCitations  = 'none';
+    this.overviewHeading = 'AI Answer';
+    this.overviewCitations = 'none';
     this.overviewParagraphs = [];
-    this.modalTop          = '';
-    this.href       = '';
-    this.target     = '';
+    this.modalTop = '';
+    this.href = '';
+    this.target = '';
     this.queryParam = 'q';
-    this.ctaLabel   = 'Ask Our Blog';
-    this.ctaHref    = '';
-    this.ctaTarget  = '';
-    this.trigger    = 'hover';
+    this.ctaLabel = 'Ask Our Blog';
+    this.ctaHref = '';
+    this.ctaTarget = '';
+    this.trigger = 'hover';
     // Snapshot BEFORE this constructor assigns its own default below —
     // attributes present in the parsed HTML already exist on the element at
     // this point (they belong to the DOM node, independent of upgrade
@@ -2207,8 +2207,8 @@ export class LwAiSearch extends LitElement {
     this._btnTypeExplicit = this.hasAttribute('btn-type');
     // 'float' pins the button to the viewport corner; 'normal' lets it
     // sit inline wherever it is placed in the page.
-    this.btnType    = 'float';
-    this.btnLabel   = 'Search with AI';
+    this.btnType = 'float';
+    this.btnLabel = 'Search with AI';
     this.widgetStyle = '';
     this.searchDisplay = '';
     this.feedback = true;
@@ -2229,10 +2229,10 @@ export class LwAiSearch extends LitElement {
     this._feedbackOpen = false;
     // Which of the three bar states is showing. bar-mode seeds it from
     // the tag; the icon group then owns it for the rest of the session.
-    this.barMode        = '';
+    this.barMode = '';
     this.barPlaceholder = 'Ask a question to get instant AI answer';
-    this._barMode       = '';
-    this._barMinimized  = false;
+    this._barMode = '';
+    this._barMinimized = false;
     // One entry per travelling chip row: how many times its questions are
     // repeated so a single copy always spans the viewport. Measured after
     // render, because it depends on how wide the questions turn out to be.
@@ -2241,40 +2241,40 @@ export class LwAiSearch extends LitElement {
     // toggle. Empty means "whatever the tag or the config says".
     this._displayOverride = '';
     this.btnSubtext = '';
-    this.label      = 'Ask our blog';
-    this.open       = false;
+    this.label = 'Ask our blog';
+    this.open = false;
     this._dismissed = false;
 
     // modal state
-    this.modalOpen     = false;
+    this.modalOpen = false;
     this._showFeatures = true;
-    this._showResults  = false;
+    this._showResults = false;
     this._resultsReady = false;
-    this._postCommit   = false;
-    this._results      = [];
-    this._loading      = false;
-    this._noResults    = false;
+    this._postCommit = false;
+    this._results = [];
+    this._loading = false;
+    this._noResults = false;
     this._noResultsMsg = 'No results found';
-    this._metaVisible  = false;
-    this._metaHits     = '';
-    this._metaTime     = '';
-    this._inputValue   = '';
-    this._summaryText  = '';
-    this._summaryHits  = [];
+    this._metaVisible = false;
+    this._metaHits = '';
+    this._metaTime = '';
+    this._inputValue = '';
+    this._summaryText = '';
+    this._summaryHits = [];
     this._summaryParagraphs = [];
     // non-reactive search state
-    this._page            = 1;
-    this._hasMore         = true;
-    this._currentQuery    = '';
+    this._page = 1;
+    this._hasMore = true;
+    this._currentQuery = '';
     this._searchCommitted = false;
-    this._debounceTimer   = null;
+    this._debounceTimer = null;
     this._abortController = null;
     this._themeAbortController = null;
-    this._didPushState    = false;
-    this._totalHits       = 0;
-    this._totalTime       = 0;
+    this._didPushState = false;
+    this._totalHits = 0;
+    this._totalTime = 0;
     // Touch devices never get the hover treatment — the button toggles.
-    this._canHover  = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    this._canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
   }
 
   get _resolvedTheme() {
@@ -2354,7 +2354,7 @@ export class LwAiSearch extends LitElement {
       `--lw-ai-close-color: ${t.closeIcon.color}`,
       ...(hasCardSurface
         ? [`--lw-ai-card-bg: ${t.card.backgroundColor}`,
-           `--lw-ai-card-color: ${t.card.textColor}`]
+        `--lw-ai-card-color: ${t.card.textColor}`]
         : []),
       `--lw-ai-card-radius: ${t.card.cornerRadius}`,
       `--lw-ask-modal-title-font: ${headerFont}`,
@@ -2399,8 +2399,8 @@ export class LwAiSearch extends LitElement {
     Promise.all(themeFontFamilies(this._resolvedTheme).map(loadGoogleFont));
     this.addEventListener('mouseenter', this._onEnter);
     this.addEventListener('mouseleave', this._onLeave);
-    this.addEventListener('focusin',    this._onEnter);
-    this.addEventListener('keydown',    this._onKeydown);
+    this.addEventListener('focusin', this._onEnter);
+    this.addEventListener('keydown', this._onKeydown);
     // Focus can sit outside the component while the modal is up, so
     // Escape and Back are handled at the document / window level.
     document.addEventListener('keydown', this._onDocKeydown);
@@ -2410,8 +2410,8 @@ export class LwAiSearch extends LitElement {
   disconnectedCallback() {
     this.removeEventListener('mouseenter', this._onEnter);
     this.removeEventListener('mouseleave', this._onLeave);
-    this.removeEventListener('focusin',    this._onEnter);
-    this.removeEventListener('keydown',    this._onKeydown);
+    this.removeEventListener('focusin', this._onEnter);
+    this.removeEventListener('keydown', this._onKeydown);
     document.removeEventListener('keydown', this._onDocKeydown);
     window.removeEventListener('resize', this._onWindowResize);
     // Never leave the page unscrollable behind a removed modal, nor
@@ -2451,8 +2451,8 @@ export class LwAiSearch extends LitElement {
       if (this.btnType !== resolved) this.btnType = resolved;
     }
     if (changedProperties.has('searchBase') ||
-        changedProperties.has('searchKey') ||
-        changedProperties.has('searchIndex')) {
+      changedProperties.has('searchKey') ||
+      changedProperties.has('searchIndex')) {
       // The suggested queries run after the theme: the tenant-scoped
       // endpoint is not available on the deployed API yet, and the
       // fallback needs the ids the styling config returns.
@@ -2467,7 +2467,7 @@ export class LwAiSearch extends LitElement {
   }
 
   get _suggestedQueriesEndpoint() {
-    const base  = (this.searchBase || '').replace(/\/+$/, '');
+    const base = (this.searchBase || '').replace(/\/+$/, '');
     const index = encodeURIComponent(this.searchIndex || 'all');
     return `${base}/api/v1/indexes/${index}/suggested-queries`;
   }
@@ -2533,11 +2533,11 @@ export class LwAiSearch extends LitElement {
       if (!listRes.ok) throw new Error(`Suggested queries failed: ${listRes.status}`);
 
       const list = await listRes.json();
-      const indexId  = this._backendTheme?.searchIndexId ?? this._backendTheme?.SearchIndexId;
+      const indexId = this._backendTheme?.searchIndexId ?? this._backendTheme?.SearchIndexId;
       const clientId = this._backendTheme?.clientId ?? this._backendTheme?.ClientId;
       const entry = Array.isArray(list)
         ? list.find(e => indexId && e.searchIndexId === indexId)
-          ?? list.find(e => clientId && e.clientId === clientId)
+        ?? list.find(e => clientId && e.clientId === clientId)
         : null;
 
       // Without ids there is no way to tell the tenants apart, so leave
@@ -2794,8 +2794,8 @@ export class LwAiSearch extends LitElement {
     if (this.open === value) return;
     this.open = value;
     this.dispatchEvent(new CustomEvent('lw-ask-toggle', {
-      detail:   { open: value },
-      bubbles:  true,
+      detail: { open: value },
+      bubbles: true,
       composed: true,
     }));
   }
@@ -2822,9 +2822,9 @@ export class LwAiSearch extends LitElement {
     }
 
     const ev = new CustomEvent('lw-ask-navigate', {
-      detail:     { href: this.href },
-      bubbles:    true,
-      composed:   true,
+      detail: { href: this.href },
+      bubbles: true,
+      composed: true,
       cancelable: true,
     });
     this.dispatchEvent(ev);
@@ -2888,10 +2888,10 @@ export class LwAiSearch extends LitElement {
     const body = document.body;
     if (!body) return;
 
-    const wrap    = this.shadowRoot?.querySelector('.bar-wrap');
-    const inBar   = this._isBar && !this._inline && !!wrap;
-    const bar     = this.shadowRoot?.querySelector('.bar');
-    const tab     = this.shadowRoot?.querySelector('.bar-toggle');
+    const wrap = this.shadowRoot?.querySelector('.bar-wrap');
+    const inBar = this._isBar && !this._inline && !!wrap;
+    const bar = this.shadowRoot?.querySelector('.bar');
+    const tab = this.shadowRoot?.querySelector('.bar-toggle');
     const visible = el => el && el.getBoundingClientRect().height > 0;
 
     // Minimized, the strip is display:none and only the tab shows, so the
@@ -2899,7 +2899,7 @@ export class LwAiSearch extends LitElement {
     // open both are hidden and the height is zero.
     const height = !inBar ? 0 : Math.ceil(
       visible(bar) ? bar.getBoundingClientRect().height
-                   : (visible(tab) ? tab.getBoundingClientRect().height : 0));
+        : (visible(tab) ? tab.getBoundingClientRect().height : 0));
 
     if (!height) {
       // Nothing is on screen to clear, so the page gets its own padding
@@ -2925,7 +2925,7 @@ export class LwAiSearch extends LitElement {
     // that carries !important, and themes do write those on body.
     const next = `${height}px`;
     if (body.style.getPropertyValue('padding-bottom') !== next
-        || body.style.getPropertyPriority('padding-bottom') !== 'important') {
+      || body.style.getPropertyPriority('padding-bottom') !== 'important') {
       body.style.setProperty('padding-bottom', next, 'important');
     }
 
@@ -2965,9 +2965,9 @@ export class LwAiSearch extends LitElement {
     let changed = false;
     marquees.forEach((marquee, r) => {
       const track = marquee.querySelector('.suggested-track');
-      const have  = Number(track?.dataset.copies) || 2;
+      const have = Number(track?.dataset.copies) || 2;
       const width = marquee.clientWidth;
-      const copy  = track ? track.scrollWidth / have : 0;
+      const copy = track ? track.scrollWidth / have : 0;
       if (!track || !width || copy < 1) { next[r] = have; return; }
       // One spare copy beyond what covers the row, so the trailing edge
       // is never on screen at the moment of the reset.
@@ -3010,8 +3010,8 @@ export class LwAiSearch extends LitElement {
     if (!on) {
       const saved = this._pagePush;
       if (!saved) return;
-      root.style.width     = saved.width;
-      root.style.minWidth  = saved.minWidth;
+      root.style.width = saved.width;
+      root.style.minWidth = saved.minWidth;
       root.style.overflowX = saved.overflowX;
       root.style.transition = saved.transition;
       saved.patched.forEach(({ el, props }) => {
@@ -3044,28 +3044,30 @@ export class LwAiSearch extends LitElement {
       if (getComputedStyle(el).position !== 'fixed') return;
       const rect = el.getBoundingClientRect();
       if (rect.width < window.innerWidth * 0.5 || rect.height < 6) return;
-      patched.push({ el, props: {
-        width:       save(el, 'width'),
-        'max-width': save(el, 'max-width'),
-        right:       save(el, 'right'),
-      } });
+      patched.push({
+        el, props: {
+          width: save(el, 'width'),
+          'max-width': save(el, 'max-width'),
+          right: save(el, 'right'),
+        }
+      });
       el.style.setProperty('width', `calc(100% - ${width}px)`, 'important');
       el.style.setProperty('max-width', `calc(100% - ${width}px)`, 'important');
       el.style.setProperty('right', `${width}px`, 'important');
     });
 
     this._pagePush = {
-      width:      root.style.width,
-      minWidth:   root.style.minWidth,
-      overflowX:  root.style.overflowX,
+      width: root.style.width,
+      minWidth: root.style.minWidth,
+      overflowX: root.style.overflowX,
       transition: root.style.transition,
       patched,
     };
 
     root.style.transition = 'width .28s ease';
-    root.style.width      = `calc(100% - ${width}px)`;
-    root.style.minWidth   = '0';
-    root.style.overflowX  = 'hidden';
+    root.style.width = `calc(100% - ${width}px)`;
+    root.style.minWidth = '0';
+    root.style.overflowX = 'hidden';
 
     // This element is fixed too, so it needs the same inset to stay clear
     // of the panel.
@@ -3114,8 +3116,8 @@ export class LwAiSearch extends LitElement {
     }
 
     this.dispatchEvent(new CustomEvent('lw-ask-modal-open', {
-      detail:   { query: q },
-      bubbles:  true,
+      detail: { query: q },
+      bubbles: true,
       composed: true,
     }));
     return true;
@@ -3147,7 +3149,7 @@ export class LwAiSearch extends LitElement {
 
   _teardownModal() {
     this._postCommit = false;
-    this.modalOpen   = false;
+    this.modalOpen = false;
     this._pushPage(false);
     document.body.style.overflow = '';
     this._abortController?.abort();
@@ -3258,13 +3260,13 @@ export class LwAiSearch extends LitElement {
   }
 
   _onModalClear() {
-    this._inputValue   = '';
+    this._inputValue = '';
     this._currentQuery = '';
     // Back to the opening screen, so the question cards are reachable again.
     this._searchCommitted = false;
-    this._showFeatures    = true;
-    this._showResults     = false;
-    this._postCommit      = false;
+    this._showFeatures = true;
+    this._showResults = false;
+    this._postCommit = false;
     this._resetSearch();
     this.updateComplete.then(() => this._input?.focus());
   }
@@ -3285,8 +3287,8 @@ export class LwAiSearch extends LitElement {
   /** A question card in the modal runs that question straight away. */
   _onCardClick(question, index) {
     this.dispatchEvent(new CustomEvent('lw-ask-question', {
-      detail:   { question, index, href: this._questionHref(question) },
-      bubbles:  true,
+      detail: { question, index, href: this._questionHref(question) },
+      bubbles: true,
       composed: true,
     }));
     this._inputValue = question;
@@ -3306,15 +3308,15 @@ export class LwAiSearch extends LitElement {
     // _onModalInput); now that it's off, this is the only path, so it
     // must not lock up after the first query. _fetchSummary already
     // aborts any in-flight request, so a rapid re-submit is safe.
-    this._loading       = true;
-    this._noResults      = false;
-    this._resultsReady   = false;
+    this._loading = true;
+    this._noResults = false;
+    this._resultsReady = false;
     this._fetchSummary(q);
-    this._currentQuery    = q;
+    this._currentQuery = q;
     this._searchCommitted = true;
-    this._showFeatures    = false;
-    this._showResults     = true;
-    this._postCommit      = true;
+    this._showFeatures = false;
+    this._showResults = true;
+    this._postCommit = true;
     // /api/v1/search/{index} disabled for now — every search runs through
     // /summary only (see _fetchSummary above, which now supplies Further
     // Reading too). /summary/stream is unused — see _fetchSummaryStream.
@@ -3322,7 +3324,7 @@ export class LwAiSearch extends LitElement {
   }
 
   get _endpoint() {
-    const base  = (this.searchBase || '').replace(/\/+$/, '');
+    const base = (this.searchBase || '').replace(/\/+$/, '');
     const index = encodeURIComponent(this.searchIndex || 'all');
     return `${base}/api/v1/search/${index}`;
   }
@@ -3334,22 +3336,22 @@ export class LwAiSearch extends LitElement {
     this._abortController = new AbortController();
     const signal = prefetch ? undefined : this._abortController.signal;
 
-    this._loading   = true;
+    this._loading = true;
     this._noResults = false;
     if (!prefetch) this._resultsReady = false;
 
     try {
       const res = await fetch(this._endpoint, {
-        method:  'POST',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-API-KEY':    this.searchKey,
+          'X-API-KEY': this.searchKey,
         },
         body: JSON.stringify({
           query,
-          limit:         LwAiSearch.pageLimit,
+          limit: LwAiSearch.pageLimit,
           semanticRatio: Number(this.semanticRatio),
-          page:          pageNum,
+          page: pageNum,
         }),
         signal,
       });
@@ -3360,12 +3362,12 @@ export class LwAiSearch extends LitElement {
 
       const items = data?.hits ?? [];
       this._totalHits = data?.estimatedTotalHits ?? 0;
-      this._totalTime = data?.processingTimeMs   ?? 0;
+      this._totalTime = data?.processingTimeMs ?? 0;
 
       if (pageNum === 1) {
-        this._results      = items;
-        this._page         = 1;
-        this._noResults    = items.length === 0;
+        this._results = items;
+        this._page = 1;
+        this._noResults = items.length === 0;
         this._noResultsMsg = 'No results found';
         this._resultsReady = true;
       } else {
@@ -3376,14 +3378,14 @@ export class LwAiSearch extends LitElement {
       this._renderMeta(query);
 
       this.dispatchEvent(new CustomEvent('lw-ask-results', {
-        detail:   { query, page: pageNum, results: this._results, total: this._totalHits },
-        bubbles:  true,
+        detail: { query, page: pageNum, results: this._results, total: this._totalHits },
+        bubbles: true,
         composed: true,
       }));
     } catch (err) {
       if (err.name === 'AbortError') return;
       console.error('<lw-ai-search> search error:', err);
-      this._noResults    = true;
+      this._noResults = true;
       this._resultsReady = true;
       this._noResultsMsg = 'Something went wrong. Please try again.';
     } finally {
@@ -3392,25 +3394,25 @@ export class LwAiSearch extends LitElement {
   }
 
   _resetToHeroView() {
-    this._page            = 1;
-    this._loading         = false;
-    this._hasMore         = true;
-    this._currentQuery    = '';
+    this._page = 1;
+    this._loading = false;
+    this._hasMore = true;
+    this._currentQuery = '';
     this._searchCommitted = false;
-    this._inputValue      = '';
-    this._resultsReady    = false;
-    this._postCommit      = false;
+    this._inputValue = '';
+    this._resultsReady = false;
+    this._postCommit = false;
     clearTimeout(this._debounceTimer);
     if (this._abortController) { this._abortController.abort(); this._abortController = null; }
-    this._results      = [];
-    this._summaryText  = '';
-    this._summaryHits  = [];
+    this._results = [];
+    this._summaryText = '';
+    this._summaryHits = [];
     this._summaryParagraphs = [];
-    this._noResults    = false;
-    this._metaVisible  = false;
-    this._metaHits     = '';
-    this._metaTime     = '';
-    this._showResults  = false;
+    this._noResults = false;
+    this._metaVisible = false;
+    this._metaHits = '';
+    this._metaTime = '';
+    this._showResults = false;
     this._showFeatures = true;
   }
 
@@ -3418,7 +3420,7 @@ export class LwAiSearch extends LitElement {
   // Non-streaming. Returns both the per-section overview (answer[]) and
   // the article hits used as citations, in one response.
   get _summaryUrl() {
-    const base  = (this.searchBase || '').replace(/\/+$/, '');
+    const base = (this.searchBase || '').replace(/\/+$/, '');
     const index = encodeURIComponent(this.searchIndex || 'all');
     return `${base}/api/v1/search/${index}/summary`;
   }
@@ -3432,17 +3434,17 @@ export class LwAiSearch extends LitElement {
 
     try {
       const res = await fetch(this._summaryUrl, {
-        method:  'POST',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-API-KEY':    this.searchKey,
+          'X-API-KEY': this.searchKey,
         },
         body: JSON.stringify({
           query,
-          filter:        {},
-          limit:         LwAiSearch.pageLimit,
+          filter: {},
+          limit: LwAiSearch.pageLimit,
           semanticRatio: Number(this.semanticRatio),
-          modelProvider : "vast",
+          modelProvider: "vast",
           // Forwarded as-is from the widget styling config, see refreshTheme.
           ...(this.promptType != null ? { promptType: this.promptType } : {}),
         }),
@@ -3453,19 +3455,19 @@ export class LwAiSearch extends LitElement {
       if (this._summaryAbort !== ctrl) return;   // superseded
 
       // Apply even when empty — a genuine "no results" answer.
-      this._summaryHits  = Array.isArray(data?.hits) ? data.hits : [];
-      this._results       = this._summaryHits;
-      this._hasMore        = false;
-      this._resultsReady   = true;
-      this._noResults      = this._results.length === 0;
-      this._noResultsMsg   = 'No results found';
-      this._loading        = false;
+      this._summaryHits = Array.isArray(data?.hits) ? data.hits : [];
+      this._results = this._summaryHits;
+      this._hasMore = false;
+      this._resultsReady = true;
+      this._noResults = this._results.length === 0;
+      this._noResultsMsg = 'No results found';
+      this._loading = false;
       // answer can be null (LLM skipped due to quota) — hits still render
       // via the list, just with no overview section.
       this._summaryParagraphs = this._mapAnswerToParagraphs(data?.answer, this._summaryHits);
       this.dispatchEvent(new CustomEvent('lw-ask-results', {
-        detail:   { query: this._currentQuery, page: 1, results: this._results, total: this._results.length },
-        bubbles:  true,
+        detail: { query: this._currentQuery, page: 1, results: this._results, total: this._results.length },
+        bubbles: true,
         composed: true,
       }));
     } catch (err) {
@@ -3474,7 +3476,7 @@ export class LwAiSearch extends LitElement {
       // already rendered rather than blanking the section.
       console.error('<lw-ai-search> summary:', err);
       if (!this._resultsReady) {
-        this._noResults    = true;
+        this._noResults = true;
         this._noResultsMsg = 'Something went wrong. Please try again.';
         this._resultsReady = true;
       }
@@ -3498,9 +3500,9 @@ export class LwAiSearch extends LitElement {
         .map(i => hits[i])
         .filter(Boolean)
         .map(h => ({
-          title:   h.title   ?? '',
+          title: h.title ?? '',
           excerpt: h.summary ?? h.bodySummary ?? h.body ?? '',
-          image:   (h.imageUrl ?? '').replace(/^\/\//, 'https://'),
+          image: (h.imageUrl ?? '').replace(/^\/\//, 'https://'),
           // Same protocol-relative fix the image above gets: a crawled
           // `//host/path` url left raw resolves against the demo host,
           // opening the wrong page. `||` not `??` — hits can also carry
@@ -3533,7 +3535,7 @@ export class LwAiSearch extends LitElement {
   // Server-sent events; one call returns both the overview text and the
   // article hits used as citations.
   get _summaryStreamUrl() {
-    const base  = (this.searchBase || '').replace(/\/+$/, '');
+    const base = (this.searchBase || '').replace(/\/+$/, '');
     const index = encodeURIComponent(this.searchIndex || 'all');
     return `${base}/api/v1/search/${index}/summary/stream`;
   }
@@ -3547,18 +3549,18 @@ export class LwAiSearch extends LitElement {
 
     try {
       const res = await fetch(this._summaryStreamUrl, {
-        method:  'POST',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept':       'text/event-stream',
-          'X-API-KEY':    this.searchKey,
+          'Accept': 'text/event-stream',
+          'X-API-KEY': this.searchKey,
         },
         body: JSON.stringify({
           query,
-          filter:        {},
-          limit:         LwAiSearch.pageLimit,
+          filter: {},
+          limit: LwAiSearch.pageLimit,
           semanticRatio: Number(this.semanticRatio),
-          modelProvider:"vast",
+          modelProvider: "vast",
           // Forwarded as-is from the widget styling config, see refreshTheme.
           ...(this.promptType != null ? { promptType: this.promptType } : {}),
         }),
@@ -3567,11 +3569,11 @@ export class LwAiSearch extends LitElement {
       if (!res.ok) throw new Error(`Summary failed: ${res.status}`);
       if (!res.body) throw new Error('Summary stream has no body');
 
-      const reader  = res.body.getReader();
+      const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
 
-      for (;;) {
+      for (; ;) {
         const { value, done } = await reader.read();
         if (done) break;
         if (this._summaryAbort !== ctrl) return;   // superseded mid-stream
@@ -3590,7 +3592,7 @@ export class LwAiSearch extends LitElement {
       // once results are showing, a later failure (e.g. the token stream
       // dropping) shouldn't blank them out from under the user.
       if (!this._resultsReady) {
-        this._noResults    = true;
+        this._noResults = true;
         this._noResultsMsg = 'Something went wrong. Please try again.';
         this._resultsReady = true;
       }
@@ -3612,7 +3614,7 @@ export class LwAiSearch extends LitElement {
    */
   _handleSseFrame(frame) {
     const event = (frame.match(/^event:\s*(.*)$/m) || [])[1]?.trim();
-    const raw   = (frame.match(/^data:\s*(.*)$/m) || [])[1];
+    const raw = (frame.match(/^data:\s*(.*)$/m) || [])[1];
     if (!event || raw === undefined) return;
 
     let data = null;
@@ -3620,18 +3622,18 @@ export class LwAiSearch extends LitElement {
 
     switch (event) {
       case 'hits':
-        this._summaryHits  = data?.hits ?? [];
-        this._results      = this._summaryHits;
+        this._summaryHits = data?.hits ?? [];
+        this._results = this._summaryHits;
         // One batch, no paging — see _onModalScroll.
-        this._hasMore       = false;
-        this._resultsReady  = true;
-        this._noResults     = this._results.length === 0;
-        this._noResultsMsg  = 'No results found';
-        this._loading       = false;
-        this._summaryText   = '';
+        this._hasMore = false;
+        this._resultsReady = true;
+        this._noResults = this._results.length === 0;
+        this._noResultsMsg = 'No results found';
+        this._loading = false;
+        this._summaryText = '';
         this.dispatchEvent(new CustomEvent('lw-ask-results', {
-          detail:   { query: this._currentQuery, page: 1, results: this._results, total: this._results.length },
-          bubbles:  true,
+          detail: { query: this._currentQuery, page: 1, results: this._results, total: this._results.length },
+          bubbles: true,
           composed: true,
         }));
         break;
@@ -3693,18 +3695,18 @@ export class LwAiSearch extends LitElement {
   }
 
   _resetSearch() {
-    this._page         = 1;
-    this._hasMore      = true;
-    this._loading      = false;
-    this._results      = [];
-    this._summaryText  = '';
-    this._summaryHits  = [];
+    this._page = 1;
+    this._hasMore = true;
+    this._loading = false;
+    this._results = [];
+    this._summaryText = '';
+    this._summaryHits = [];
     this._summaryParagraphs = [];
-    this._noResults    = false;
+    this._noResults = false;
     this._resultsReady = false;
-    this._metaVisible  = false;
-    this._metaHits     = '';
-    this._metaTime     = '';
+    this._metaVisible = false;
+    this._metaHits = '';
+    this._metaTime = '';
   }
 
   _formatDate(str) {
@@ -3718,7 +3720,7 @@ export class LwAiSearch extends LitElement {
     if (!query) { this._metaVisible = false; return; }
     this._metaVisible = true;
     this._metaHits = `${this._results.length.toLocaleString()} results from ` +
-                     `${this._totalHits.toLocaleString()} items`;
+      `${this._totalHits.toLocaleString()} items`;
     this._metaTime = this._totalHits ? `Search time: ${this._totalTime} ms` : '';
   }
 
@@ -3736,9 +3738,9 @@ export class LwAiSearch extends LitElement {
   _onQuestion(e, question, index) {
     const href = this._questionHref(question);
     const ev = new CustomEvent('lw-ask-question', {
-      detail:     { question, index, href },
-      bubbles:    true,
-      composed:   true,
+      detail: { question, index, href },
+      bubbles: true,
+      composed: true,
       cancelable: true,
     });
     this.dispatchEvent(ev);
@@ -3753,9 +3755,9 @@ export class LwAiSearch extends LitElement {
 
   _onCta = (e) => {
     const ev = new CustomEvent('lw-ask-cta', {
-      detail:     { label: this.ctaLabel, href: this.ctaHref },
-      bubbles:    true,
-      composed:   true,
+      detail: { label: this.ctaLabel, href: this.ctaHref },
+      bubbles: true,
+      composed: true,
       cancelable: true,
     });
     this.dispatchEvent(ev);
@@ -3767,10 +3769,10 @@ export class LwAiSearch extends LitElement {
     return html`
       <div class="ai-search-launcher" style=${this._themeStyle}>
         ${this._inline
-          ? this._renderInlineButton()
-          : this._isBar
-            ? this._renderBar()
-            : html`${this._renderQuestions()}${this._renderFab()}`}
+        ? this._renderInlineButton()
+        : this._isBar
+          ? this._renderBar()
+          : html`${this._renderQuestions()}${this._renderFab()}`}
       </div>
       ${this._renderModal()}
     `;
@@ -3837,26 +3839,26 @@ export class LwAiSearch extends LitElement {
           <p class="suggested-label">People are searching for</p>
           <div class="suggested-rows">
             ${rows.map((row, r) => {
-              // Two copies is the minimum for a loop; _syncChipRows raises
-              // it when one copy is narrower than the screen, which is what
-              // would otherwise leave a gap travelling through the row.
-              const copies = Math.max(2, this._chipRowCopies[r] || 2);
-              const ghost = (question, index) => html`
+        // Two copies is the minimum for a loop; _syncChipRows raises
+        // it when one copy is narrower than the screen, which is what
+        // would otherwise leave a gap travelling through the row.
+        const copies = Math.max(2, this._chipRowCopies[r] || 2);
+        const ghost = (question, index) => html`
                 <button class="suggested-chip" tabindex="-1" aria-hidden="true"
                         @click=${() => this._onCardClick(question, index)}>${question}</button>`;
-              return html`
+        return html`
                 <div class="suggested-marquee ${r % 2 === 0 ? 'is-ltr' : 'is-rtl'}"
                      style=${[
-                       `--lw-row-duration: calc(${LwAiSearch.chipRowDurationSeconds}s * var(--lw-ask-row-speed, 1))`,
-                       `--lw-row-shift: calc(-100% / ${copies})`,
-                     ].join(';')}>
+            `--lw-row-duration: calc(${LwAiSearch.chipRowDurationSeconds}s * var(--lw-ask-row-speed, 1))`,
+            `--lw-row-shift: calc(-100% / ${copies})`,
+          ].join(';')}>
                   <div class="suggested-track" data-copies=${copies}>
                     ${row.items.map((question, i) => chip(question, row.offset + i))}
                     ${Array.from({ length: copies - 1 }, () =>
-                        row.items.map((question, i) => ghost(question, row.offset + i)))}
+            row.items.map((question, i) => ghost(question, row.offset + i)))}
                   </div>
                 </div>`;
-            })}
+      })}
           </div>
         </div>`;
     }
@@ -3968,27 +3970,27 @@ export class LwAiSearch extends LitElement {
              would make it the containing block for anything fixed.) -->
         <div class="modal-head">
           ${(() => {
-            const panel = this._isPanel;
-            const option = (mode, icon, label) => html`
+        const panel = this._isPanel;
+        const option = (mode, icon, label) => html`
               <button class="display-option"
                       aria-pressed=${(mode === 'panel') === panel ? 'true' : 'false'}
                       aria-label=${label}
                       title=${label}
                       @click=${() => this._setDisplayMode(mode)}>${icon}</button>`;
-            return html`
+        return html`
               <div id="ai-search-display" role="group" aria-label="Search layout">
                 ${option('fullpage', LwAiSearch.expandIcon, 'Full page')}
                 ${option('panel', LwAiSearch.panelIcon, 'Side panel')}
               </div>`;
-          })()}
+      })()}
 
           <button id="ai-search-close" aria-label="Close search"
                   @click=${this.closeSearch}>&times;</button>
 
           <div class="client-logo" aria-label="Logo">
             ${this._resolvedTheme.logo.image
-              ? html`<img src=${this._resolvedTheme.logo.image} alt="Logo" />`
-              : html`
+        ? html`<img src=${this._resolvedTheme.logo.image} alt="Logo" />`
+        : html`
                 <div class="client-logo-placeholder" role="img" aria-label="Logo">
                   <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/>
@@ -4054,24 +4056,24 @@ export class LwAiSearch extends LitElement {
       ?? hit.tags?.[0]
       ?? hit.topic
       ?? (hit.url
-          ? decodeURIComponent((hit.url.split('/blogs/')[1] || '').split('/')[0]).replace(/-/g, ' ')
-          : '');
+        ? decodeURIComponent((hit.url.split('/blogs/')[1] || '').split('/')[0]).replace(/-/g, ' ')
+        : '');
 
     return {
-      id:       hit.id,
-      title:    hit.title   ?? '',
-      excerpt:  hit.summary ?? hit.body ?? '',
+      id: hit.id,
+      title: hit.title ?? '',
+      excerpt: hit.summary ?? hit.body ?? '',
       image,
-      author:   hit.author?.name ?? hit.authorName ?? '',
-      avatar:   hit.author?.img  ?? hit.authorImg  ?? '',
+      author: hit.author?.name ?? hit.authorName ?? '',
+      avatar: hit.author?.img ?? hit.authorImg ?? '',
       category,
-      url:      hit.canonicalUrl || hit.url || '',
-      date:     this._formatDate(hit.publishedAt ?? hit.date),
+      url: hit.canonicalUrl || hit.url || '',
+      date: this._formatDate(hit.publishedAt ?? hit.date),
       readTime: hit.readTime ?? '',
       // kept for the detail view
-      _body:    hit.body    ?? '',
+      _body: hit.body ?? '',
       _summary: hit.summary ?? '',
-      _topics:  hit.topics ?? hit.tags ?? [],
+      _topics: hit.topics ?? hit.tags ?? [],
     };
   }
 
@@ -4141,9 +4143,9 @@ export class LwAiSearch extends LitElement {
 
       <div class="bar">
         <div class="bar-modes" role="group" aria-label="Suggestion display">
-          ${modeButton('search',    LwAiSearch.searchIcon, 'Search')}
-          ${modeButton('questions', LwAiSearch.gridIcon,   'Suggested questions')}
-          ${modeButton('scroll',    LwAiSearch.listIcon,   'All questions')}
+          ${modeButton('search', LwAiSearch.searchIcon, 'Search')}
+          ${modeButton('questions', LwAiSearch.gridIcon, 'Suggested questions')}
+          ${modeButton('scroll', LwAiSearch.listIcon, 'All questions')}
         </div>
 
         <span class="bar-divider" aria-hidden="true"></span>
@@ -4206,9 +4208,9 @@ export class LwAiSearch extends LitElement {
     // The panel only ever opens upward, so the stagger runs bottom-up:
     // the pill nearest the button leads.
     const total = items.length + 1;
-    const step  = n => `--d: ${n * 45}ms`;
+    const step = n => `--d: ${n * 45}ms`;
     const delay = i => step(total - 1 - i);
-    const tab   = this.open ? '0' : '-1';
+    const tab = this.open ? '0' : '-1';
 
     return html`
       <div class="panel"
@@ -4229,9 +4231,9 @@ export class LwAiSearch extends LitElement {
         </button>
 
         ${items.map((q, i) => {
-          const qHref = this._questionHref(q);
-          return qHref
-            ? html`
+      const qHref = this._questionHref(q);
+      return qHref
+        ? html`
               <a class="pill"
                  style=${delay(i)}
                  href=${qHref}
@@ -4242,7 +4244,7 @@ export class LwAiSearch extends LitElement {
                  @click=${e => this._onQuestion(e, q, i)}>
                 ${q}
               </a>`
-            : html`
+        : html`
               <button class="pill"
                       style=${delay(i)}
                       title=${q}
@@ -4250,10 +4252,10 @@ export class LwAiSearch extends LitElement {
                       @click=${e => this._onQuestion(e, q, i)}>
                 ${q}
               </button>`;
-        })}
+    })}
 
         ${this.ctaHref
-          ? html`
+        ? html`
             <a class="pill cta"
                style=${step(0)}
                href=${this.ctaHref}
@@ -4263,24 +4265,23 @@ export class LwAiSearch extends LitElement {
                @click=${this._onCta}>
               ${LwAiSearch.sparkleIcon}${this.ctaLabel}
             </a>`
-          : html`
+        : html`
             <button class="pill cta"
                     style=${step(0)}
                     tabindex=${tab}
                     @click=${this._onCta}>
               ${LwAiSearch.sparkleIcon}${this.ctaLabel}
             </button>`
-        }
+      }
       </div>
     `;
   }
 
   _renderFab() {
-    const style  = this._launcherStyle;
+    const style = this._launcherStyle;
     const helper = this._resolvedTheme.widget.helperText;
     // In "icon" mode the helper text is not rendered on the launcher at all.
-    const inner  = html`${LwAiSearch.searchIcon}${
-      style === 'icon-text' && helper
+    const inner = html`${LwAiSearch.searchIcon}${style === 'icon-text' && helper
         ? html`<span class="fab-label">${helper}</span>`
         : ''}`;
     return html`

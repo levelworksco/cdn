@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Blog Detail — Lit CDN Demo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #ffffff;
+      font-family: 'Source Sans 3', sans-serif;
+      padding: 2rem 2.5rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+
+  <lw-blog-detailed id="myPost"></lw-blog-detailed>
+
+  <script type="module">
+    import './lw-blog-details.js';
+
+    const stored = sessionStorage.getItem('lw-blog-detail');
+    if (stored) {
+      document.getElementById('myPost').post = JSON.parse(stored);
+    } else {
+    // fallback demo data
+    document.getElementById('myPost').post = {
+      title:        'Teaching That Matters',
+      url:          'https://heartbrightlearning.org/blogs/all/teaching-that-matters',
+      image:        'https://heartbrightlearning.org/cdn/shop/articles/123314_3f572197-d61b-49c8-a3f7-8432b2fa0165.jpg?v=1774084686&width=1500',
+      imageCaption: 'https://heartbrightlearning.org/cdn/shop/articles/123314_3f572197-d61b-49c8-a3f7-8432b2fa0165.jpg?v=1774084686&width=1500',
+      summary:      'Counsellor experience shows labels, stress, and lost purpose can harm students. Values education and project-based learning help children feel seen, build resilience, and learn with purpose at school.',
+      author:       'Jyoti Kumta',
+      avatar:       'https://i.pravatar.cc/48?img=47',
+      date:         'March 04, 2026',
+      readTime:     '3 min read',
+      postType:     'Instructional Blogs',
+      categories:   ['The Human Side of Schooling', 'Learner-Centered Methodology'],
+      tags:         ['The Human Side of Schooling', 'Learner-Centered Methodology', 'The Why of Education'],
+      body: [
+        { type: 'heading',   text: 'Reflections from a Student Counsellor on Values, Purpose, and Project-Based Learning' },
+        { type: 'paragraph', text: 'I did not come to the importance of Values Education through curriculum design or pedagogical theory. I came to it sitting across a small table from children who were already carrying labels far heavier than their schoolbags.' },
+        { type: 'image',     src: 'https://heartbrightlearning.org/cdn/shop/articles/123314_3f572197-d61b-49c8-a3f7-8432b2fa0165.jpg?v=1774084686&width=1500', caption: 'Children in a classroom setting.' },
+        { type: 'paragraph', text: 'As a student counsellor in a school, I often met students after the system had reached a conclusion about them. They were sent to me with brief summaries—sometimes no more than a sentence long—that attempted to explain who they were. Rarely did those summaries come close to the truth.' },
+        { type: 'paragraph', text: 'One particular instance remains etched in my mind. Three students from Grades 2 and 3 were referred to me with identical descriptions: "the naughtiest and most disruptive child in the class." On paper, they appeared the same problem, requiring the same correction. In reality, their stories could not have been more different.' },
+        { type: 'paragraph', text: 'The first child was struggling with dyslexia. He could not follow what was happening in the classroom, and disruption had become his only way to mask confusion and preserve dignity. The second child was highly intelligent and completed his work far ahead of his peers. Bored and unstimulated for most of the period, he sought engagement in whatever form he could find. The third child simply could not read what was written on the blackboard—he had never been taught cursive handwriting, yet the classroom assumed he knew it.' },
+        { type: 'paragraph', text: 'None of these children were "naughty." They were unheard.' },
+        { type: 'heading',   text: 'Values Are Not an Add-On. They Are the Foundation.' },
+        { type: 'paragraph', text: 'In the counselling room, academic achievement rarely took center stage. What emerged instead were struggles with self-worth, belonging, frustration, and fear—fear of failure, of being misunderstood, of not being "enough."' },
+        { type: 'paragraph', text: 'Values education is often misunderstood as moral instruction—telling children what is right and wrong. But values are not absorbed through lectures. They are shaped through experience, through how systems respond to difference, and through whether adults choose curiosity over judgment.' },
+        { type: 'heading',   text: 'The Quiet Crisis of Purpose in Young Learners' },
+        { type: 'paragraph', text: 'As I continued my work as a counsellor, another pattern emerged—one that was less visible but equally concerning. Many students, even those who were academically successful, struggled with a deep sense of disconnection.' },
+        { type: 'paragraph', text: 'This lack of purpose manifested in different ways—anxiety, apathy, perfectionism, or quiet withdrawal. Without a sense of meaning, effort felt exhausting rather than energizing. Learning became transactional, reduced to marks, rankings, and approval.' },
+        { type: 'heading',   text: 'From Intervention to Prevention' },
+        { type: 'paragraph', text: 'Over time, I saw that many of the challenges I was addressing reactively in the counselling room could be addressed proactively in the classroom. If students were misunderstood, disengaged, or disconnected, it was often because the learning environment left little room for individuality, agency, or meaning.' },
+        { type: 'heading',   text: 'How Project-Based Learning Creates Space for Values' },
+        { type: 'paragraph', text: 'I first encountered PBL not as a formal classroom strategy, but as an out-of-school learning experience. What struck me immediately was not the academic output, but the transformation in relationships.' },
+        { type: 'paragraph', text: 'This experience reinforced something I deeply believe: values emerge most powerfully when children are given shared purpose and real responsibility.' },
+        { type: 'heading',   text: 'Purpose as a Source of Resilience' },
+        { type: 'paragraph', text: 'One of the most striking insights from my counselling work was this: students who had even a fragile sense of purpose coped better with hardships. Purpose acted as an anchor. It allowed students to view setbacks as part of growth rather than evidence of failure.' },
+        { type: 'heading',   text: 'Education as Preventive Care' },
+        { type: 'paragraph', text: 'In healthcare, prevention is more powerful than intervention. The same principle applies to education. Teaching values, nurturing purpose, and adopting methodologies like Project-Based Learning is not an enrichment initiative. It is preventive care for emotional, social, and ethical wellbeing.' },
+        { type: 'paragraph', text: 'The choice before us is not whether we have time to teach values and purpose—but whether we can afford the cost of ignoring them. Because when education teaches what truly matters, fewer children need to be "fixed." Instead, they are finally understood.' },
+      ],
+    };
+    }
+  </script>
+
+</body>
+</html>

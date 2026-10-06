@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Overview</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      color: #3c3c3c;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 840px;
+      margin: 0 auto;
+      padding: 32px 24px 40px;
+    }
+
+    h1 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 18px;
+      letter-spacing: 0;
+    }
+
+    .paragraphs {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    p {
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 1.65;
+      color: #3c3c3c;
+      margin-bottom: 16px;
+    }
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* ── Citation pill ── */
+    .citation {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid #D9D9D9;
+      border-radius: 999px;
+      padding: 1px 9px;
+      font-size: 11.5px;
+      font-weight: 400;
+      color: #000000;
+      background-color: #F3F3F3;
+      white-space: nowrap;
+      vertical-align: middle;
+      margin-left: 4px;
+      line-height: 1.6;
+      position: relative;
+      top: -1px;
+      cursor: pointer;
+      z-index: 0;
+    }
+
+    .citation.is-open {
+      z-index: 100;
+    }
+
+    /* ── Hover card ── */
+    .citation-card {
+      position: fixed; /* fixed escapes all ancestor overflow clipping */
+      top: 0;
+      left: 0;
+      width: 460px;
+      background: #ffffff;
+      border: 1px solid #e5e5e5;
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10), 0 2px 6px rgba(0, 0, 0, 0.06);
+      z-index: 9999;
+      white-space: normal;
+      font-size: 13px;
+      font-weight: 400;
+      color: #3c3c3c;
+      line-height: 1.5;
+      max-height: 336px; /* 3 items × 112px each */
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-width: thin;
+      scrollbar-color: #d4d4d4 transparent;
+
+      /* hidden until open */
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(4px);
+      transition: opacity 0.15s ease, transform 0.15s ease;
+    }
+
+    .citation-card.is-open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .citation-card::-webkit-scrollbar {
+      width: 5px;
+    }
+    .citation-card::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .citation-card::-webkit-scrollbar-thumb {
+      background: #d4d4d4;
+      border-radius: 99px;
+    }
+    .citation-card::-webkit-scrollbar-thumb:hover {
+      background: #b0b0b0;
+    }
+
+    /* ── Article item inside card ── */
+    .citation-article {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 14px 16px;
+      border-top: 1px solid #f0f0f0;
+      transition: background 0.1s;
+      /* reset <a> defaults */
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+    }
+
+    .citation-article:first-child {
+      border-top: none;
+    }
+
+    .citation-article:hover {
+      background: #fafafa;
+    }
+
+    .citation-article-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .citation-article-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1a1a1a;
+      line-height: 1.4;
+      margin-bottom: 5px;
+    }
+
+    .citation-article:hover .citation-article-title {
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .citation-article-excerpt {
+      font-size: 12px;
+      color: #666;
+      line-height: 1.55;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .citation-article-image {
+      width: 130px;
+      height: 84px;
+      flex-shrink: 0;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #e8e8e8;
+    }
+
+    .citation-article-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .divider {
+      height: 1px;
+      background-color: #e5e5e5;
+      margin-top: 24px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        padding: 24px 16px 32px;
+      }
+
+      h1 {
+        font-size: 14px;
+      }
+
+      p {
+        font-size: 13.5px;
+      }
+
+      .citation {
+        font-size: 11px;
+        padding: 1px 7px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 20px 14px 28px;
+      }
+
+      h1 {
+        font-size: 13.5px;
+        margin-bottom: 14px;
+      }
+
+      p {
+        font-size: 13px;
+        line-height: 1.6;
+        margin-bottom: 14px;
+      }
+
+      .citation {
+        font-size: 10.5px;
+        padding: 1px 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Overview</h1>
+
+    <div class="paragraphs">
+      <p>
+        Most children begin developing the foundations of reading long before they are able to read independently. Through conversations, storytelling, songs, rhymes, and play, children build vocabulary, listening skills, and an understanding of language that support later reading development.
+        <span class="citation" data-articles='[
+          {
+            "title": "The Reading Readiness Myth",
+            "excerpt": "Reading readiness is not a fixed developmental stage children reach at a set age — it is a continuum of emerging skills shaped by experience, environment, and instruction.",
+            "image": "https://images.unsplash.com/photo-1588072432836-e10032774350?w=300&q=80",
+            "url": "https://heartbrightlearning.org/blogs/all/the-reading-readiness-myth"
+          },
+          {
+            "title": "Applying Science of Reading for Lasting Literacy",
+            "excerpt": "The Science of Reading is structured practice with meaning — this post uses piano scales and math-to-letter patterns to show how names, poems, and stories make decoding playful and durable.",
+            "image": "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=300&q=80",
+            "url": "https://heartbrightlearning.org/blogs/all/applying-science-of-reading"
+          }
+        ]'>The Reading Readiness Myth + 1</span>
+      </p>
+
+      <p>
+        Early literacy experiences are often most effective when they are enjoyable, meaningful, and connected to a child's natural curiosity. Activities such as shared reading, storytelling, imaginative play, and exploration of sounds and symbols can help create positive associations with reading while strengthening foundational skills.
+        <span class="citation" data-articles='[
+          {
+            "title": "The Reading Readiness Myth",
+            "excerpt": "Reading readiness is not a fixed developmental stage children reach at a set age — it is a continuum of emerging skills shaped by experience, environment, and instruction.",
+            "image": "https://images.unsplash.com/photo-1588072432836-e10032774350?w=300&q=80",
+            "url": "https://heartbrightlearning.org/blogs/all/the-reading-readiness-myth"
+          },
+          {
+            "title": "Applying Science of Reading for Lasting Literacy",
+            "excerpt": "The Science of Reading is structured practice with meaning — this post uses piano scales and math-to-letter patterns to show how names, poems, and stories make decoding playful and durable.",
+            "image": "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=300&q=80",
+            "url": "https://heartbrightlearning.org/blogs/all/applying-science-of-reading"
+          },
+          {
+            "title": "Play, Language, and the Literate Mind",
+            "excerpt": "Imaginative play is not a break from learning — for young children it is the primary mechanism by which vocabulary, narrative structure, and phonemic awareness develop naturally.",
+            "image": "https://images.unsplash.com/photo-1545558014-8692077e9b5c?w=300&q=80",
+            "url": "https://heartbrightlearning.org/blogs/all/play-language-and-the-literate-mind"
+          },
+          {
+            "title": "Building Foundational Skills Through Story",
+            "excerpt": "Shared reading routines expose children to print concepts, rich vocabulary, and story grammar in a low-stakes, high-engagement context that classroom instruction alone rarely replicates.",
+            "image": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=300&q=80",
+            "url": "https://heartbrightlearning.org/blogs/all/building-foundational-skills-through-story"
+          }
+        ]'>The Reading Readiness Myth + 3</span>
+      </p>
+
+      <p>
+        Rather than focusing on a specific age, many educators emphasize reading readiness, which includes language development, auditory awareness, visual discrimination, attention, and an interest in written language. Children develop these skills at different rates.
+        <span class="citation" data-articles='[
+          {
+            "title": "The Reading Readiness Myth",
+            "excerpt": "Reading readiness is not a fixed developmental stage children reach at a set age — it is a continuum of emerging skills shaped by experience, environment, and instruction.",
+            "image": "https://images.unsplash.com/photo-1588072432836-e10032774350?w=300&q=80",
+            "url": "https://heartbrightlearning.org/blogs/all/the-reading-readiness-myth"
+          },
+          {
+            "title": "Auditory Awareness and Early Reading",
+            "excerpt": "Phonological awareness — the ability to hear and manipulate sounds in spoken language — is one of the strongest early predictors of reading success across languages and writing systems.",
+            "image": "https://images.unsplash.com/photo-1516627145497-ae6968895b74?w=300&q=80",
+            "url": "https://heartbrightlearning.org/blogs/all/auditory-awareness-and-early-reading"
+          },
+          {
+            "title": "Visual Discrimination in Literacy Development",
+            "excerpt": "Before children can decode letters they must distinguish between similar shapes. Fine-grained visual discrimination develops through drawing, sorting, and environmental print exposure.",
+            "image": "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=300&q=80",
+            "url": "https://heartbrightlearning.org/blogs/all/visual-discrimination-in-literacy"
+          },
+          {
+            "title": "Every Child on Their Own Timeline",
+            "excerpt": "Developmental variation in early literacy is wide and normal. Understanding the range helps educators support emerging readers without pathologising individual differences in pace.",
+            "image": "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=300&q=80",
+            "url": "https://heartbrightlearning.org/blogs/all/every-child-on-their-own-timeline"
+          }
+        ]'>The Reading Readiness Myth + 3</span>
+      </p>
+    </div>
+
+    <div class="divider"></div>
+  </div>
+
+  <script>
+    const HIDE_DELAY = 150; // ms to wait before hiding after mouse leaves
+
+    document.querySelectorAll('.citation[data-articles]').forEach(citation => {
+      const articles = JSON.parse(citation.dataset.articles);
+
+      const card = document.createElement('div');
+      card.className = 'citation-card';
+
+      articles.forEach(article => {
+        const item = document.createElement('a');
+        item.className = 'citation-article';
+        item.href = article.url;
+        item.target = '_blank';
+        item.rel = 'noopener noreferrer';
+        item.innerHTML = `
+          <div class="citation-article-body">
+            <div class="citation-article-title">${article.title}</div>
+            <div class="citation-article-excerpt">${article.excerpt}</div>
+          </div>
+          <div class="citation-article-image">
+            <img src="${article.image}" alt="${article.title}" loading="lazy" />
+          </div>
+        `;
+        card.appendChild(item);
+      });
+
+      document.body.appendChild(card);
+
+      let hideTimer = null;
+
+      function show() {
+        clearTimeout(hideTimer);
+
+        const MARGIN = 12;
+        const vw = window.innerWidth;
+        const rect = citation.getBoundingClientRect();
+
+        // Card width: capped at viewport minus margins
+        const cardWidth = Math.min(460, vw - MARGIN * 2);
+        card.style.width = cardWidth + 'px';
+
+        // Ideal: align card left to citation left
+        let left = rect.left;
+        // Clamp right edge
+        if (left + cardWidth > vw - MARGIN) left = vw - MARGIN - cardWidth;
+        // Clamp left edge
+        if (left < MARGIN) left = MARGIN;
+
+        card.style.left = left + 'px';
+        card.style.top  = (rect.bottom + 8) + 'px';
+
+        citation.classList.add('is-open');
+        card.classList.add('is-open');
+      }
+
+      function scheduleHide() {
+        hideTimer = setTimeout(() => {
+          citation.classList.remove('is-open');
+          card.classList.remove('is-open');
+        }, HIDE_DELAY);
+      }
+
+      citation.addEventListener('mouseenter', show);
+      citation.addEventListener('mouseleave', scheduleHide);
+      card.addEventListener('mouseenter', () => clearTimeout(hideTimer));
+      card.addEventListener('mouseleave', scheduleHide);
+    });
+  </script>
+</body>
+</html>

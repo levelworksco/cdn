@@ -1,0 +1,32 @@
+name: chatgpt_markdown_exporter
+description: Flutter wrapper for the ChatGPT → Markdown Lit web component.
+version: 1.0.0+1
+publish_to: none
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # WebView — official Flutter package, supports Android, iOS, macOS, Windows, Linux.
+  webview_flutter: ^4.10.0
+  # Platform-specific WebView implementations.
+  webview_flutter_android: ^4.13.0
+  webview_flutter_wkwebview: ^3.14.0
+
+  # Cross-platform paths (Documents, Downloads, etc.).
+  path_provider: ^2.1.4
+
+  # Path utilities.
+  path: ^1.9.0
+  webview_all: ^1.0.3
+flutter:
+  uses-material-design: true
+
+  assets:
+    # No build step needed — just copy lit-app/index.html and
+    # lit-app/chatgpt-markdown-exporter.js into this directory.
+    - assets/web/index.html
+    - assets/web/chatgpt-markdown-exporter.js

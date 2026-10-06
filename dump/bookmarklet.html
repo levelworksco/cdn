@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>lw-ai-search Bookmarklet</title>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-gradient: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #0f172a 50%, #030712 100%);
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --primary: #1E7A4A;
+      --primary-hover: #17603A;
+      --primary-glow: rgba(30, 122, 74, 0.4);
+      --accent: #38bdf8;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3rem 1rem;
+    }
+
+    .container { max-width: 640px; width: 100%; text-align: center; }
+
+    .header { margin-bottom: 2rem; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      background: rgba(30, 122, 74, 0.15);
+      border: 1px solid rgba(30, 122, 74, 0.35);
+      color: var(--accent);
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+      letter-spacing: 0.02em;
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 0.75rem;
+    }
+
+    p.subtitle { color: var(--text-muted); font-size: 1rem; line-height: 1.6; }
+
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 2rem;
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      margin-bottom: 1.5rem;
+      text-align: left;
+    }
+
+    .field { margin-bottom: 1rem; }
+
+    .field label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .field input {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      padding: 0.65rem 0.85rem;
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 0.9rem;
+    }
+
+    .field input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .field .hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem; }
+
+    .drag-zone {
+      margin: 1.5rem 0 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 1.5rem;
+    }
+
+    .bookmarklet-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 1.05rem;
+      font-weight: 700;
+      padding: 0.9rem 1.75rem;
+      border-radius: 14px;
+      box-shadow: 0 10px 25px -5px var(--primary-glow), 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+      cursor: grab;
+      user-select: none;
+      transition: all 0.2s ease;
+    }
+
+    .bookmarklet-btn.is-disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .bookmarklet-btn:active { cursor: grabbing; transform: scale(0.97); }
+
+    .drag-hint {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--accent);
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 1.5rem;
+    }
+
+    .step-item {
+      background: rgba(15, 23, 42, 0.6);
+      padding: 1rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 7px;
+      background: var(--primary);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.8rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .step-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.3rem; }
+    .step-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
+
+    .code-box {
+      background: rgba(15, 23, 42, 0.8);
+      border-radius: 12px;
+      padding: 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      margin-top: 1.5rem;
+      position: relative;
+    }
+
+    .code-box pre {
+      overflow-x: auto;
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      font-size: 0.78rem;
+      color: #cbd5e1;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 0.6rem;
+      right: 0.6rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: #f8fafc;
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .copy-btn:hover { background: rgba(255, 255, 255, 0.2); }
+
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      background: #10b981;
+      color: white;
+      padding: 0.7rem 1.4rem;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s ease;
+      pointer-events: none;
+    }
+
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    .note {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 1rem;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="badge">Instant Bookmarklet</div>
+      <h1>lw-ai-search Bookmarklet</h1>
+      <p class="subtitle">
+        Fill in your search config below, then drag the button into your
+        bookmarks bar. Clicking it drops the AI search launcher onto
+        whatever page you're on — click again to remove it.
+      </p>
+    </div>
+
+    <div class="card">
+      <div class="field">
+        <label for="cfgKey">Search key (X-API-KEY)</label>
+        <input id="cfgKey" type="text" placeholder="tk_live_..." autocomplete="off" />
+        <div class="hint">Pasted straight into the generated bookmarklet — v1 is manual, no key management yet.</div>
+      </div>
+
+      <div class="field">
+        <label for="cfgBase">Search base (API origin)</label>
+        <input id="cfgBase" type="text" value="https://discoverai.levelworks.co" autocomplete="off" />
+        <div class="hint">Must be an absolute URL — the bookmarklet can run on any site, so it can't rely on same-origin requests.</div>
+      </div>
+
+      <div class="field">
+        <label for="cfgIndex">Search index</label>
+        <input id="cfgIndex" type="text" value="all" autocomplete="off" />
+      </div>
+
+      <div class="drag-zone">
+        <a id="bookmarkletLink" class="bookmarklet-btn is-disabled" href="javascript:void(0)">
+          🔍 Search with AI
+        </a>
+        <div class="drag-hint">↑ Drag this button to your Bookmarks Bar</div>
+      </div>
+
+      <div class="steps">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-title">Fill in the fields</div>
+          <div class="step-desc">At minimum, paste your search key above.</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-title">Drag &amp; Drop</div>
+          <div class="step-desc">Drag the button into your browser's bookmarks bar.</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-title">Click anywhere</div>
+          <div class="step-desc">Open any page and click the bookmark to toggle the launcher.</div>
+        </div>
+      </div>
+
+      <div class="code-box">
+        <button class="copy-btn" id="copyBtn">Copy Code</button>
+        <pre><code id="bookmarkletCode"></code></pre>
+      </div>
+
+      <p class="note">
+        Loads <code>lw-ai-search.js</code> and its dependencies straight off jsDelivr's GitHub
+        CDN from the public <code>levelworksco/lw-web-components</code> repo (branch
+        <code>raj-web-component</code>). jsDelivr caches branch URLs for a while, so a
+        freshly pushed change may take a few minutes to show up — pin to a commit SHA
+        instead of the branch name if you need the bookmarklet to track an exact revision.
+      </p>
+
+      <p class="note">
+        <strong>Copy the code again after a change.</strong> The bookmarklet you saved is a
+        frozen copy of the snippet below, and the snippet carries a dated cache-buster —
+        without recopying it, your browser can keep serving a week-old build of
+        <code>lw-ai-search.js</code> no matter what has been pushed.
+      </p>
+    </div>
+  </div>
+
+  <div id="toast" class="toast">Copied bookmarklet code to clipboard!</div>
+
+  <script>
+    const CDN_BASE = 'https://cdn.jsdelivr.net/gh/levelworksco/lw-web-components@raj-web-component/lw-ai-search/lw-ai-search.js';
+
+    // jsDelivr tells browsers to keep this file for a week, so a bookmarklet
+    // saved yesterday keeps running yesterday's build however many times the
+    // branch moves. The stamp changes daily, which is as often as the copied
+    // bookmarklet itself gets refreshed, and jsDelivr ignores the parameter.
+    const CDN_URL = CDN_BASE + '?v=' + new Date().toISOString().slice(0, 10);
+
+    function buildSource(key, base, index) {
+      return `(() => {
+  const ID = '__lw_ai_search_bookmarklet__';
+  const existing = document.getElementById(ID);
+  if (existing) { existing.remove(); return; }
+  const CDN = ${JSON.stringify(CDN_URL)};
+  const ready = customElements.get('lw-ai-search') ? Promise.resolve() : import(CDN);
+  ready.then(() => customElements.whenDefined('lw-ai-search')).then(() => {
+    const el = document.createElement('lw-ai-search');
+    el.id = ID;
+    el.setAttribute('search-base', ${JSON.stringify(base)});
+    el.setAttribute('search-key', ${JSON.stringify(key)});
+    el.setAttribute('search-index', ${JSON.stringify(index || 'all')});
+    // Says out loud what the element already does -- the card is on by
+    // default. Set it to 'false' for a bookmarklet that shows the search
+    // alone.
+    el.setAttribute('feedback', '');
+    document.body.appendChild(el);
+  });
+})();`;
+    }
+
+    const keyInput = document.getElementById('cfgKey');
+    const baseInput = document.getElementById('cfgBase');
+    const indexInput = document.getElementById('cfgIndex');
+    const link = document.getElementById('bookmarkletLink');
+    const codeEl = document.getElementById('bookmarkletCode');
+
+    function refresh() {
+      const key = keyInput.value.trim();
+      const base = baseInput.value.trim();
+      const index = indexInput.value.trim();
+      const src = buildSource(key, base, index);
+
+      codeEl.textContent = 'javascript:' + src;
+
+      if (key) {
+        link.href = 'javascript:' + src.replace(/\s+/g, ' ').trim();
+        link.classList.remove('is-disabled');
+      } else {
+        link.href = 'javascript:void(0)';
+        link.classList.add('is-disabled');
+      }
+    }
+
+    [keyInput, baseInput, indexInput].forEach(el => el.addEventListener('input', refresh));
+    refresh();
+
+    document.getElementById('copyBtn').addEventListener('click', () => {
+      navigator.clipboard.writeText(codeEl.textContent).then(() => {
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2000);
+      });
+    });
+
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (link.classList.contains('is-disabled')) {
+        keyInput.focus();
+        return;
+      }
+      alert('👉 Drag this button directly onto your browser\'s Bookmarks Bar to install it!');
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,334 @@
+[  +48 ms] executing: uname -m
+[   +3 ms] Exit code 0 from: uname -m
+[        ] x86_64
+[   +6 ms] Artifact Instance of 'MaterialFonts' is not required, skipping update.
+[        ] Artifact Instance of 'GradleWrapper' is not required, skipping update.
+[        ] Artifact Instance of 'AndroidGenSnapshotArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'AndroidInternalBuildArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterWebSdk' is not required, skipping update.
+[        ] Artifact Instance of 'LegacyCanvasKitRemover' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterSdk' is not required, skipping update.
+[        ] Artifact Instance of 'WindowsEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerDebugSymbols' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FontSubsetArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'PubDependencies' is not required, skipping update.
+[        ] executing: [/home/sahil/development/flutter/] git -c log.showSignature=false log HEAD -n 1 --pretty=format:%ad --date=iso
+[   +4 ms] Exit code 0 from: git -c log.showSignature=false log HEAD -n 1 --pretty=format:%ad --date=iso
+[        ] 2026-06-10 15:52:41 -0700
+[  +20 ms] Artifact Instance of 'AndroidGenSnapshotArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'AndroidInternalBuildArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterWebSdk' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterEngineStamp' is not required, skipping update.
+[        ] Artifact Instance of 'LegacyCanvasKitRemover' is not required, skipping update.
+[   +1 ms] Artifact Instance of 'WindowsEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'LinuxFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerDebugSymbols' is not required, skipping update.
+[  +58 ms] Artifact Instance of 'AndroidGenSnapshotArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'AndroidInternalBuildArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'IOSEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterWebSdk' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterEngineStamp' is not required, skipping update.
+[        ] Artifact Instance of 'LegacyCanvasKitRemover' is not required, skipping update.
+[        ] Artifact Instance of 'WindowsEngineArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSEngineArtifacts' is not required, skipping update.
+[   +1 ms] Artifact Instance of 'LinuxFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'MacOSFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerSDKArtifacts' is not required, skipping update.
+[        ] Artifact Instance of 'FlutterRunnerDebugSymbols' is not required, skipping update.
+[  +43 ms] Skipping pub get: version match.
+[  +27 ms] Found plugin webview_flutter_wkwebview at /home/sahil/.pub-cache/hosted/pub.dev/webview_flutter_wkwebview-3.26.0/
+[  +45 ms] Found plugin webview_flutter_android at /home/sahil/.pub-cache/hosted/pub.dev/webview_flutter_android-4.13.0/
+[   +4 ms] Found plugin webview_flutter at /home/sahil/.pub-cache/hosted/pub.dev/webview_flutter-4.14.0/
+[   +5 ms] Found plugin webview_all at /home/sahil/.pub-cache/hosted/pub.dev/webview_all-1.0.3/
+[   +2 ms] Found plugin webview_all_windows at /home/sahil/.pub-cache/hosted/pub.dev/webview_all_windows-0.5.2/
+[   +3 ms] Found plugin webview_all_web at /home/sahil/.pub-cache/hosted/pub.dev/webview_all_web-0.5.2/
+[   +5 ms] Found plugin webview_all_linux at /home/sahil/.pub-cache/hosted/pub.dev/webview_all_linux-0.5.4/
+[   +4 ms] Found plugin path_provider at /home/sahil/.pub-cache/hosted/pub.dev/path_provider-2.1.5/
+[   +3 ms] Found plugin path_provider_windows at /home/sahil/.pub-cache/hosted/pub.dev/path_provider_windows-2.3.0/
+[   +9 ms] Found plugin path_provider_linux at /home/sahil/.pub-cache/hosted/pub.dev/path_provider_linux-2.2.1/
+[   +6 ms] Found plugin path_provider_foundation at /home/sahil/.pub-cache/hosted/pub.dev/path_provider_foundation-2.6.0/
+[  +19 ms] Found plugin path_provider_android at /home/sahil/.pub-cache/hosted/pub.dev/path_provider_android-2.3.1/
+[   +1 ms] Found plugin jni_flutter at /home/sahil/.pub-cache/hosted/pub.dev/jni_flutter-1.0.1/
+[   +1 ms] Found plugin jni at /home/sahil/.pub-cache/hosted/pub.dev/jni-1.0.0/
+[  +18 ms] Found plugin webview_flutter_wkwebview at /home/sahil/.pub-cache/hosted/pub.dev/webview_flutter_wkwebview-3.26.0/
+[  +10 ms] Found plugin webview_flutter_android at /home/sahil/.pub-cache/hosted/pub.dev/webview_flutter_android-4.13.0/
+[   +1 ms] Found plugin webview_flutter at /home/sahil/.pub-cache/hosted/pub.dev/webview_flutter-4.14.0/
+[   +2 ms] Found plugin webview_all at /home/sahil/.pub-cache/hosted/pub.dev/webview_all-1.0.3/
+[   +1 ms] Found plugin webview_all_windows at /home/sahil/.pub-cache/hosted/pub.dev/webview_all_windows-0.5.2/
+[   +1 ms] Found plugin webview_all_web at /home/sahil/.pub-cache/hosted/pub.dev/webview_all_web-0.5.2/
+[   +2 ms] Found plugin webview_all_linux at /home/sahil/.pub-cache/hosted/pub.dev/webview_all_linux-0.5.4/
+[   +1 ms] Found plugin path_provider at /home/sahil/.pub-cache/hosted/pub.dev/path_provider-2.1.5/
+[   +1 ms] Found plugin path_provider_windows at /home/sahil/.pub-cache/hosted/pub.dev/path_provider_windows-2.3.0/
+[   +2 ms] Found plugin path_provider_linux at /home/sahil/.pub-cache/hosted/pub.dev/path_provider_linux-2.2.1/
+[   +1 ms] Found plugin path_provider_foundation at /home/sahil/.pub-cache/hosted/pub.dev/path_provider_foundation-2.6.0/
+[   +8 ms] Found plugin path_provider_android at /home/sahil/.pub-cache/hosted/pub.dev/path_provider_android-2.3.1/
+[        ] Found plugin jni_flutter at /home/sahil/.pub-cache/hosted/pub.dev/jni_flutter-1.0.1/
+[        ] Found plugin jni at /home/sahil/.pub-cache/hosted/pub.dev/jni-1.0.0/
+[  +11 ms] Skipping generating web_plugin_registrant.dart because it is up-to-date.
+[   +4 ms] Found plugin webview_flutter_wkwebview at /home/sahil/.pub-cache/hosted/pub.dev/webview_flutter_wkwebview-3.26.0/
+[   +7 ms] Found plugin webview_flutter_android at /home/sahil/.pub-cache/hosted/pub.dev/webview_flutter_android-4.13.0/
+[   +1 ms] Found plugin webview_flutter at /home/sahil/.pub-cache/hosted/pub.dev/webview_flutter-4.14.0/
+[   +2 ms] Found plugin webview_all at /home/sahil/.pub-cache/hosted/pub.dev/webview_all-1.0.3/
+[        ] Found plugin webview_all_windows at /home/sahil/.pub-cache/hosted/pub.dev/webview_all_windows-0.5.2/
+[   +1 ms] Found plugin webview_all_web at /home/sahil/.pub-cache/hosted/pub.dev/webview_all_web-0.5.2/
+[   +1 ms] Found plugin webview_all_linux at /home/sahil/.pub-cache/hosted/pub.dev/webview_all_linux-0.5.4/
+[        ] Found plugin path_provider at /home/sahil/.pub-cache/hosted/pub.dev/path_provider-2.1.5/
+[        ] Found plugin path_provider_windows at /home/sahil/.pub-cache/hosted/pub.dev/path_provider_windows-2.3.0/
+[   +2 ms] Found plugin path_provider_linux at /home/sahil/.pub-cache/hosted/pub.dev/path_provider_linux-2.2.1/
+[   +1 ms] Found plugin path_provider_foundation at /home/sahil/.pub-cache/hosted/pub.dev/path_provider_foundation-2.6.0/
+[   +6 ms] Found plugin path_provider_android at /home/sahil/.pub-cache/hosted/pub.dev/path_provider_android-2.3.1/
+[        ] Found plugin jni_flutter at /home/sahil/.pub-cache/hosted/pub.dev/jni_flutter-1.0.1/
+[        ] Found plugin jni at /home/sahil/.pub-cache/hosted/pub.dev/jni-1.0.0/
+[   +5 ms] Skipping generating generated_plugin_registrant.h because it is up-to-date.
+[        ] Skipping generating generated_plugin_registrant.cc because it is up-to-date.
+[        ] Skipping generating generated_plugins.cmake because it is up-to-date.
+[  +48 ms] Initializing file store
+[  +10 ms] Skipping target: gen_localizations
+[   +3 ms] gen_dart_plugin_registrant: Starting due to {InvalidatedReasonKind.inputChanged: The following inputs have updated contents: /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/.dart_tool/package_config.json,/home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/.dart_tool/flutter_build/dart_plugin_registrant.dart}
+[   +8 ms] Found plugin webview_flutter_wkwebview at /home/sahil/.pub-cache/hosted/pub.dev/webview_flutter_wkwebview-3.26.0/
+[   +7 ms] Found plugin webview_flutter_android at /home/sahil/.pub-cache/hosted/pub.dev/webview_flutter_android-4.13.0/
+[   +1 ms] Found plugin webview_flutter at /home/sahil/.pub-cache/hosted/pub.dev/webview_flutter-4.14.0/
+[   +1 ms] Found plugin webview_all at /home/sahil/.pub-cache/hosted/pub.dev/webview_all-1.0.3/
+[        ] Found plugin webview_all_windows at /home/sahil/.pub-cache/hosted/pub.dev/webview_all_windows-0.5.2/
+[        ] Found plugin webview_all_web at /home/sahil/.pub-cache/hosted/pub.dev/webview_all_web-0.5.2/
+[   +2 ms] Found plugin webview_all_linux at /home/sahil/.pub-cache/hosted/pub.dev/webview_all_linux-0.5.4/
+[   +1 ms] Found plugin path_provider at /home/sahil/.pub-cache/hosted/pub.dev/path_provider-2.1.5/
+[        ] Found plugin path_provider_windows at /home/sahil/.pub-cache/hosted/pub.dev/path_provider_windows-2.3.0/
+[   +2 ms] Found plugin path_provider_linux at /home/sahil/.pub-cache/hosted/pub.dev/path_provider_linux-2.2.1/
+[   +1 ms] Found plugin path_provider_foundation at /home/sahil/.pub-cache/hosted/pub.dev/path_provider_foundation-2.6.0/
+[  +11 ms] Found plugin path_provider_android at /home/sahil/.pub-cache/hosted/pub.dev/path_provider_android-2.3.1/
+[        ] Found plugin jni_flutter at /home/sahil/.pub-cache/hosted/pub.dev/jni_flutter-1.0.1/
+[        ] Found plugin jni at /home/sahil/.pub-cache/hosted/pub.dev/jni-1.0.0/
+[   +5 ms] Skipping generating dart_plugin_registrant.dart because it is up-to-date.
+[        ] gen_dart_plugin_registrant: Complete
+[   +6 ms] Skipping target: _composite
+[   +1 ms] complete
+[   +3 ms] Launching lib/main.dart on Linux in debug mode...
+[   +3 ms] /home/sahil/development/flutter/bin/cache/dart-sdk/bin/dartaotruntime /home/sahil/development/flutter/bin/cache/dart-sdk/bin/snapshots/frontend_server_aot.dart.snapshot --sdk-root /home/sahil/development/flutter/bin/cache/artifacts/engine/common/flutter_patched_sdk/ --incremental --target=flutter --experimental-emit-debug-metadata -DFLUTTER_VERSION=3.44.2 -DFLUTTER_CHANNEL=stable -DFLUTTER_GIT_URL=https://github.com/flutter/flutter.git -DFLUTTER_FRAMEWORK_REVISION=c9a6c48423 -DFLUTTER_ENGINE_REVISION=77e2e94772 -DFLUTTER_DART_VERSION=3.12.2 --output-dill /tmp/flutter_tools.RNJHYL/flutter_tool.MOLIUI/app.dill --packages /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/.dart_tool/package_config.json -Ddart.vm.profile=false -Ddart.vm.product=false --enable-asserts --track-widget-creation --filesystem-scheme org-dartlang-root --initialize-from-dill build/11f9252fab9bb4424d40abfb06fd5e81.cache.dill.track.dill --source file:///home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/.dart_tool/flutter_build/dart_plugin_registrant.dart --source package:flutter/src/dart_plugin_registrant.dart -Dflutter.dart_plugin_registrant=file:///home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/.dart_tool/flutter_build/dart_plugin_registrant.dart --verbosity=error --enable-experiment=alternative-invalidation-strategy
+[  +18 ms] Building Linux application...
+[   +6 ms] <- compile package:chatgpt_markdown_exporter/main.dart
+[   +1 ms] executing: [/home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/build/linux/x64/debug/] cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug -DFLUTTER_TARGET_PLATFORM=linux-x64 /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/linux
+[  +64 ms] -- Could NOT find JNI (missing: JAVA_INCLUDE_PATH JAVA_INCLUDE_PATH2 JVM) 
+[        ] -- Configuring done (0.0s)
+[  +70 ms] -- Generating done (0.1s)
+[  +80 ms] -- Build files have been written to: /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/build/linux/x64/debug
+[  +13 ms] executing: ninja -C /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/build/linux/x64/debug install
+[   +9 ms] ninja: Entering directory `/home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/build/linux/x64/debug'
+[+4198 ms] [1/7] Generating /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/linux/flutter/ephemeral/libflutter_linux_gtk.so, /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/linux/flutter/ephemeral/flutter_linux/fl_basic_message_channel.h, /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/linux/flutter/ephemeral/flutter_linux/fl_binary_codec.h, /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/linux/flutter/ephemeral/flutter_linux/fl_binary_messenger.h, /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/linux/flutter/ephemeral/flutter_linux/fl_dart_project.h, /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/linux/flutter/ephemeral/flutter_linux/fl_engine.h, /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/linux/flutter/ephemeral/flutter_linux/fl_json_message_codec.h, /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/linux/flutter/ephemeral/flutter_linux/fl_json_method_codec.h, /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/linux/flutter/ephemeral/flutter_linux/fl_message_codec.h, /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/linux/flutter/ephemeral/flutter_linux/fl_method_call.h, /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/linux/flutter/ephemeral/flutter_linux/fl_method_channel.h, /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/linux/flutter/ephemeral/flutter_linux/fl_method_codec.h, /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/linux/flutter/ephemeral/flutter_linux/fl_method_response.h, /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/linux/flutter/ephemeral/flutter_linux/fl_plugin_registrar.h, /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/linux/flutter/ephemeral/flutter_linux/fl_plugin_registry.h, /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/linux/flutter/ephemeral/flutter_linux/fl_standard_message_codec.h, /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/linux/flutter/ephemeral/flutter_linux/fl_standard_method_codec.h, /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/linux/flutter/ephemeral/flutter_linux/fl_string_codec.h, /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/linux/flutter/ephemeral/flutter_linux/fl_value.h, /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/linux/flutter/ephemeral/flutter_linux/fl_view.h, /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/linux/flutter/ephemeral/flutter_linux/flutter_linux.h, _phony_
+[        ] [  +56 ms] executing: uname -m
+[        ] [   +4 ms] Exit code 0 from: uname -m
+[        ] [        ] x86_64
+[        ] [ +997 ms] Artifact Instance of 'MaterialFonts' is not required, skipping update.
+[        ] [   +1 ms] Artifact Instance of 'GradleWrapper' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'AndroidGenSnapshotArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'AndroidInternalBuildArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'IOSEngineArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'FlutterWebSdk' is not required, skipping update.
+[        ] [   +2 ms] Artifact Instance of 'LegacyCanvasKitRemover' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'FlutterSdk' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'WindowsEngineArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'MacOSEngineArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'LinuxEngineArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'LinuxFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'MacOSFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'FlutterRunnerSDKArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'FlutterRunnerDebugSymbols' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'FontSubsetArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'PubDependencies' is not required, skipping update.
+[        ] [  +26 ms] Artifact Instance of 'AndroidGenSnapshotArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'AndroidInternalBuildArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'IOSEngineArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'FlutterWebSdk' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'FlutterEngineStamp' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'LegacyCanvasKitRemover' is not required, skipping update.
+[        ] [   +2 ms] Artifact Instance of 'WindowsEngineArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'MacOSEngineArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'LinuxEngineArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'LinuxFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'MacOSFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'FlutterRunnerSDKArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'FlutterRunnerDebugSymbols' is not required, skipping update.
+[        ] [ +115 ms] Artifact Instance of 'MaterialFonts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'GradleWrapper' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'AndroidGenSnapshotArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'AndroidInternalBuildArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'IOSEngineArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'FlutterWebSdk' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'FlutterEngineStamp' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'LegacyCanvasKitRemover' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'FlutterSdk' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'WindowsEngineArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'MacOSEngineArtifacts' is not required, skipping update.
+[        ] [   +1 ms] Artifact Instance of 'LinuxFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'MacOSFuchsiaSDKArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'FlutterRunnerSDKArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'FlutterRunnerDebugSymbols' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'IosUsbArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'FontSubsetArtifacts' is not required, skipping update.
+[        ] [        ] Artifact Instance of 'PubDependencies' is not required, skipping update.
+[        ] [  +27 ms] Initializing file store
+[        ] [   +9 ms] Done initializing file store
+[        ] [  +53 ms] Skipping target: dart_build
+[        ] [   +1 ms] Skipping target: gen_dart_plugin_registrant
+[        ] [ +484 ms] Skipping target: unpack_linux
+[        ] [   +1 ms] Skipping target: install_code_assets
+[        ] [        ] Skipping target: gen_localizations
+[        ] [ +562 ms] Skipping target: kernel_snapshot_program
+[        ] [ +317 ms] Skipping target: debug_bundle_linux-x64_assets
+[        ] [        ] Persisting file store
+[        ] [  +45 ms] Done persisting file store
+[        ] [  +28 ms] build succeeded.
+[        ] [        ] "flutter assemble" took 1,677ms.
+[        ] [  +21 ms] Running 1 shutdown hook
+[        ] [        ] Shutdown hooks complete
+[        ] [ +196 ms] exiting with code 0
+[        ] [1/2] Install the project...
+[        ] -- Install configuration: "Debug"
+[        ] -- Installing: /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/build/linux/x64/debug/bundle/chatgpt_markdown_exporter
+[        ] -- Set non-toolchain portion of runtime path of "/home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/build/linux/x64/debug/bundle/chatgpt_markdown_exporter" to "$ORIGIN/lib"
+[        ] -- Installing: /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/build/linux/x64/debug/bundle/data/icudtl.dat
+[        ] -- Installing: /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/build/linux/x64/debug/bundle/lib/libflutter_linux_gtk.so
+[        ] -- Installing: /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/build/linux/x64/debug/bundle/lib/libwebview_all_linux_plugin.so
+[        ] -- Up-to-date: /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/build/linux/x64/debug/bundle/lib
+[        ] -- Installing: /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/build/linux/x64/debug/bundle/data/flutter_assets
+[        ] -- Installing: /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/build/linux/x64/debug/bundle/data/flutter_assets/AssetManifest.bin
+[        ] -- Installing: /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/build/linux/x64/debug/bundle/data/flutter_assets/assets
+[        ] -- Installing: /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/build/linux/x64/debug/bundle/data/flutter_assets/assets/web
+[        ] -- Installing: /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/build/linux/x64/debug/bundle/data/flutter_assets/assets/web/index.html
+[        ] -- Installing: /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/build/linux/x64/debug/bundle/data/flutter_assets/assets/web/chatgpt-markdown-exporter.js
+[        ] -- Installing: /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/build/linux/x64/debug/bundle/data/flutter_assets/version.json
+[        ] -- Installing: /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/build/linux/x64/debug/bundle/data/flutter_assets/NOTICES.Z
+[        ] -- Installing: /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/build/linux/x64/debug/bundle/data/flutter_assets/fonts
+[        ] -- Installing: /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/build/linux/x64/debug/bundle/data/flutter_assets/fonts/MaterialIcons-Regular.otf
+[        ] -- Installing: /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/build/linux/x64/debug/bundle/data/flutter_assets/FontManifest.json
+[        ] -- Installing: /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/build/linux/x64/debug/bundle/data/flutter_assets/kernel_blob.bin
+[        ] -- Installing: /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/build/linux/x64/debug/bundle/data/flutter_assets/shaders
+[        ] -- Installing: /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/build/linux/x64/debug/bundle/data/flutter_assets/shaders/ink_sparkle.frag
+[        ] -- Installing: /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/build/linux/x64/debug/bundle/data/flutter_assets/shaders/stretch_effect.frag
+[        ] -- Installing: /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/build/linux/x64/debug/bundle/data/flutter_assets/NativeAssetsManifest.json
+[   +4 ms] Building Linux application... (completed in 4.5s)
+[   +1 ms] ✓ Built build/linux/x64/debug/bundle/chatgpt_markdown_exporter
+[ +245 ms] VM Service URL on device: http://127.0.0.1:45239/b0ciGc-_I8o=/
+[   +4 ms] Caching compiled dill
+[+4129 ms] Connecting to service protocol: http://127.0.0.1:45239/b0ciGc-_I8o=/
+[   +8 ms] Gdk-Message: 17:15:41.471: Unable to load  from the cursor theme
+[        ] INIT STATE
+[        ] BUILD CALLED
+[        ] LIFECYCLE: AppLifecycleState.resumed
+[        ] RESUMED
+[        ] LIFECYCLE: AppLifecycleState.inactive
+[        ] LIFECYCLE: AppLifecycleState.resumed
+[        ] RESUMED
+[        ] MAIN STARTED: about:blank
+[        ] MAIN FINISHED: about:blank
+[        ] MAIN: Loading test HTML
+[        ] LOAD HTML CALLED
+[        ] LOAD HTML RETURNED
+[        ] MAIN STARTED: about:blank
+[        ] MAIN FINISHED: about:blank
+[        ] MAIN: Removing spinner
+[        ] BUILD CALLED
+[ +130 ms] Launching a Dart Developer Service (DDS) instance at http://127.0.0.1:0, connecting to VM service at http://127.0.0.1:45239/b0ciGc-_I8o=/.
+[  +99 ms] Successfully connected to service protocol: http://127.0.0.1:45239/b0ciGc-_I8o=/
+[   +9 ms] DevFS: Creating new filesystem on the device (null)
+[  +34 ms] DevFS: Created new filesystem on the device (file:///tmp/flutter_wrapperXPULXZ/flutter_wrapper/)
+[   +2 ms] Updating assets for linux
+[        ] runHooks() with {TargetFile: /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/lib/main.dart, BuildMode: debug} and TargetPlatform.linux_x64
+[        ] runHooks() - will perform dart build
+[  +32 ms] Building native assets for linux_x64.
+[  +38 ms] input.json contents:
+           {
+             "assets": {},
+             "config": {
+               "build_asset_types": [],
+               "linking_enabled": false
+             },
+             "out_dir_shared": "/home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/.dart_tool/hooks_runner/shared/objective_c/build/",
+             "out_file": "/home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/.dart_tool/hooks_runner/objective_c/337ce265dc/output.json",
+             "package_name": "objective_c",
+             "package_root": "/home/sahil/.pub-cache/hosted/pub.dev/objective_c-9.4.1/",
+             "user_defines": {}
+           }
+[   +4 ms] output.json contents:
+           {
+             "assets_for_linking": {},
+             "status": "success",
+             "timestamp": "2026-06-15 15:44:14.000"
+           }
+[   +2 ms] Skipping build for objective_c in /home/sahil/dev/work/levelworks/lw-web-components/markdown-exporter/flutter_wrapper/.dart_tool/hooks_runner/objective_c/337ce265dc/. Last build on 2026-06-15 15:44:14.000.
+[   +4 ms] Building native assets for linux_x64 done.
+[        ] runHooks() - done
+[  +99 ms] Syncing files to device Linux...
+[   +2 ms] Compiling dart to kernel with 0 updated files
+[        ] Processing bundle.
+[        ] <- recompile package:chatgpt_markdown_exporter/main.dart 9d22a094-76c8-40be-a704-5b74c75c1bd7
+[        ] <- 9d22a094-76c8-40be-a704-5b74c75c1bd7
+[   +2 ms] Bundle processing done.
+[ +662 ms] LIFECYCLE: AppLifecycleState.inactive
+[ +617 ms] LIFECYCLE: AppLifecycleState.resumed
+[        ] RESUMED
+[ +350 ms] Updating files.
+[        ] Pending asset builds completed. Writing dirty entries.
+[        ] DevFS: Sync finished
+[        ] Syncing files to device Linux... (completed in 1,636ms)
+[        ] Synced 0.0MB.
+[        ] <- accept
+[   +2 ms] Connected to _flutterView/0x61855dd88f20.
+[   +2 ms] Flutter run key commands.
+[   +1 ms] r Hot reload. 🔥🔥🔥
+[        ] R Hot restart.
+[        ] h List all available interactive commands.
+[        ] d Detach (terminate "flutter run" but leave application running).
+[        ] c Clear the screen
+[        ] q Quit (terminate the application on the device).
+[        ] A Dart VM Service on Linux is available at: http://127.0.0.1:37415/jVelTl95fkg=/
+[   +1 ms] The Flutter DevTools debugger and profiler on Linux is available at: http://127.0.0.1:37415/jVelTl95fkg=/devtools/?uri=ws://127.0.0.1:37415/jVelTl95fkg=/ws
+[ +647 ms] LIFECYCLE: AppLifecycleState.inactive
+[+25741 ms] LIFECYCLE: AppLifecycleState.resumed
+[   +1 ms] RESUMED
+[ +924 ms] LIFECYCLE: AppLifecycleState.inactive
+[+2186 ms] LIFECYCLE: AppLifecycleState.resumed
+[   +1 ms] RESUMED
+[+8180 ms] LIFECYCLE: AppLifecycleState.inactive
+[ +789 ms] LIFECYCLE: AppLifecycleState.resumed
+[   +1 ms] RESUMED
+[ +327 ms] LIFECYCLE: AppLifecycleState.inactive
+[+633172 ms] LIFECYCLE: AppLifecycleState.resumed
+[        ] RESUMED
+[+1649 ms] LIFECYCLE: AppLifecycleState.inactive
+[ +865 ms] Application finished.
+[        ] Running 3 shutdown hooks
+[   +1 ms] DevFS: Deleting filesystem on the device (file:///tmp/flutter_wrapperXPULXZ/flutter_wrapper/)
+[   +6 ms] Shutdown hooks complete
+[   +4 ms] DevFS: Deleted filesystem on the device (file:///tmp/flutter_wrapperXPULXZ/flutter_wrapper/)
+[   +1 ms] Service protocol connection closed.
+[   +1 ms] "flutter run" took 685,981ms.
+[ +257 ms] exiting with code 0

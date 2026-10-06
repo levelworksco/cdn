@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Widget Bookmarklet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg-gradient: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #0f172a 50%, #030712 100%);
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --primary-glow: rgba(99, 102, 241, 0.4);
+      --accent: #38bdf8;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Ambient background lights */
+    .glow-sphere {
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glow-1 {
+      top: 10%;
+      left: 20%;
+      background: rgba(99, 102, 241, 0.15);
+    }
+
+    .glow-2 {
+      bottom: 10%;
+      right: 20%;
+      background: rgba(56, 189, 248, 0.15);
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 640px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .header {
+      margin-bottom: 2.5rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: var(--accent);
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+      letter-spacing: 0.02em;
+    }
+
+    h1 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 0.75rem;
+      background: linear-gradient(135deg, #ffffff 30%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    p.subtitle {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      line-height: 1.6;
+    }
+
+    /* Main Bookmarklet Card */
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 2.5rem 2rem;
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      margin-bottom: 2rem;
+    }
+
+    .drag-zone {
+      margin: 1.5rem 0 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    /* Bookmarklet Button Link */
+    .bookmarklet-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 1.15rem;
+      font-weight: 700;
+      padding: 1rem 2rem;
+      border-radius: 14px;
+      box-shadow: 0 10px 25px -5px var(--primary-glow), 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+      cursor: grab;
+      user-select: none;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .bookmarklet-btn:active {
+      cursor: grabbing;
+      transform: scale(0.97);
+    }
+
+    .bookmarklet-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 30px -5px rgba(99, 102, 241, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+    }
+
+    .bookmarklet-btn svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .drag-hint {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--accent);
+      font-size: 0.9rem;
+      font-weight: 500;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-4px);
+      }
+    }
+
+    /* Steps */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1.25rem;
+      text-align: left;
+      margin-top: 2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 2rem;
+    }
+
+    .step-item {
+      background: rgba(15, 23, 42, 0.6);
+      padding: 1.25rem;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--primary);
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 0.85rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .step-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+      color: #f1f5f9;
+    }
+
+    .step-desc {
+      font-size: 0.825rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .step-desc kbd {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      color: #e2e8f0;
+      font-family: inherit;
+    }
+
+    /* Secondary actions */
+    .code-box {
+      background: rgba(15, 23, 42, 0.8);
+      border-radius: 12px;
+      padding: 1rem;
+      text-align: left;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      margin-top: 1.5rem;
+      position: relative;
+    }
+
+    .code-box pre {
+      overflow-x: auto;
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 0.65rem;
+      right: 0.65rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: #f8fafc;
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: background 0.2s;
+    }
+
+    .copy-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      background: #10b981;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 9999px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="glow-sphere glow-1"></div>
+  <div class="glow-sphere glow-2"></div>
+
+  <div class="container">
+    <div class="header">
+      <div class="badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+        Instant Bookmarklet
+      </div>
+      <h1>Chat Widget Bookmarklet</h1>
+      <p class="subtitle">Drag the button below directly onto your browser's bookmarks bar to add a floating chat icon
+        to the bottom right of any web page.</p>
+    </div>
+
+    <div class="card">
+      <div class="drag-zone">
+        <a id="bookmarkletLink" class="bookmarklet-btn"
+          href="javascript:(()=>{if(document.getElementById('__custom_chat_widget__')){const el=document.getElementById('__custom_chat_widget__');el.style.display=el.style.display==='none'?'flex':'none';return;}const btn=document.createElement('div');btn.id='__custom_chat_widget__';btn.title='Chat with us';btn.innerHTML='<svg width=&quot;28&quot; height=&quot;28&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;white&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z&quot;/></svg>';Object.assign(btn.style,{position:'fixed',bottom:'24px',right:'24px',width:'60px',height:'60px',borderRadius:'50%',background:'linear-gradient(135deg, #6366f1, #4f46e5)',boxShadow:'0 8px 24px rgba(79, 70, 229, 0.4)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',zIndex:'2147483647',transition:'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'});btn.onmouseenter=()=>btn.style.transform='scale(1.1)';btn.onmouseleave=()=>btn.style.transform='scale(1)';btn.onclick=()=>alert('💬 Chat widget clicked!');document.body.appendChild(btn);})();">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+          💬 Add Chat Widget
+        </a>
+        <div class="drag-hint">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="19" x2="12" y2="5"></line>
+            <polyline points="5 12 12 5 19 12"></polyline>
+          </svg>
+          Drag this button to your Bookmarks Bar
+        </div>
+      </div>
+
+      <div class="steps">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-title">Show Bookmarks Bar</div>
+          <div class="step-desc">Press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> (or
+            <kbd>⌘</kbd>+<kbd>Shift</kbd>+<kbd>B</kbd> on Mac) if not visible.</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-title">Drag & Drop</div>
+          <div class="step-desc">Click and hold the button above, then drag it directly into your bookmarks bar.</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-title">Ready to Use</div>
+          <div class="step-desc">Navigate to any webpage and click the bookmark to toggle the bottom-right chat icon.
+          </div>
+        </div>
+      </div>
+
+      <div class="code-box">
+        <button class="copy-btn" id="copyBtn" onclick="copyBookmarklet()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+          </svg>
+          Copy Code
+        </button>
+        <pre><code id="bookmarkletCode">javascript:(() => {
+  if (document.getElementById('__custom_chat_widget__')) {
+    const el = document.getElementById('__custom_chat_widget__');
+    el.style.display = el.style.display === 'none' ? 'flex' : 'none';
+    return;
+  }
+  const btn = document.createElement('div');
+  btn.id = '__custom_chat_widget__';
+  btn.title = 'Chat with us';
+  btn.innerHTML = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
+  Object.assign(btn.style, {
+    position: 'fixed',
+    bottom: '24px',
+    right: '24px',
+    width: '60px',
+    height: '60px',
+    borderRadius: '50%',
+    background: 'linear-gradient(135deg, #6366f1, #4f46e5)',
+    boxShadow: '0 8px 24px rgba(79, 70, 229, 0.4)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    zIndex: '2147483647',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+  });
+  btn.onmouseenter = () => btn.style.transform = 'scale(1.1)';
+  btn.onmouseleave = () => btn.style.transform = 'scale(1)';
+  btn.onclick = () => alert('💬 Chat widget clicked!');
+  document.body.appendChild(btn);
+})();</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast">Copied bookmarklet script to clipboard!</div>
+
+  <script>
+    const bookmarkletCodeStr = `javascript:(()=>{if(document.getElementById('__custom_chat_widget__')){const el=document.getElementById('__custom_chat_widget__');el.style.display=el.style.display==='none'?'flex':'none';return;}const btn=document.createElement('div');btn.id='__custom_chat_widget__';btn.title='Chat with us';btn.innerHTML='<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';Object.assign(btn.style,{position:'fixed',bottom:'24px',right:'24px',width:'60px',height:'60px',borderRadius:'50%',background:'linear-gradient(135deg, #6366f1, #4f46e5)',boxShadow:'0 8px 24px rgba(79, 70, 229, 0.4)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',zIndex:'2147483647',transition:'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'});btn.onmouseenter=()=>btn.style.transform='scale(1.1)';btn.onmouseleave=()=>btn.style.transform='scale(1)';btn.onclick=()=>alert('💬 Chat widget clicked!');document.body.appendChild(btn);})();`;
+
+    function copyBookmarklet() {
+      navigator.clipboard.writeText(bookmarkletCodeStr).then(() => {
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => {
+          toast.classList.remove('show');
+        }, 2500);
+      });
+    }
+
+    // Prevent accidental navigation when clicking the link directly on the installation page
+    document.getElementById('bookmarkletLink').addEventListener('click', (e) => {
+      e.preventDefault();
+      alert('👉 Drag this button directly onto your browser\'s Bookmarks Bar to install it!');
+    });
+  </script>
+</body>
+
+</html>

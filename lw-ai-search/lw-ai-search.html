@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>lw-ai-search</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0f0f0f;
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Stand-in hero, so the launcher can be judged over dark art ── */
+    .hero {
+      position: relative;
+      /* The bottom bar publishes its height on <html> while it is up, so
+         a full-viewport section can end above it instead of running
+         underneath. Zero when there is no bar. */
+      min-height: calc(100vh - var(--lw-ask-bar-space, 0px));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: #fff;
+      background:
+        radial-gradient(120% 90% at 70% 20%, #6b6152 0%, #2c2a26 55%, #141414 100%);
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 7vw, 4.5rem);
+      font-weight: 400;
+      font-family: Georgia, 'Times New Roman', serif;
+      letter-spacing: -0.01em;
+    }
+
+    .hero .stats {
+      margin-top: 0.75rem;
+      font-size: clamp(1rem, 2.4vw, 1.5rem);
+      font-weight: 400;
+    }
+
+    .hero .sub {
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.75);
+    }
+
+    .inline-row {
+      margin-top: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .log {
+      position: fixed;
+      left: 16px;
+      bottom: 16px;
+      max-width: 46vw;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.55);
+      color: #d6f5e3;
+      font-size: 12px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+  <section class="hero">
+    <h1>Welcome to Levelworks</h1>
+    <div class="stats">Design. Build.‍ Maintain.</div>
+
+    <!-- btn-type="normal": a plain labelled button in normal flow.
+         No hover panel — pressing it goes straight to `href`. -->
+    <div class="inline-row">
+      <lw-ai-search
+        btn-type="normal"
+        btn-label="Search with AI"
+        btn-subtext="Ask anything to find relevant blogs"
+        search-base=""
+        search-key="pk_live_BZfN2SpXzwOh5LDvQmoDDjCkBHnf3ghscE4_6bwddAE"
+        search-index="all"
+        modal-top="0"
+      ></lw-ai-search>
+    </div>
+  </section>
+
+  <pre class="log" id="log">Hover the button ↘</pre>
+
+  <!-- search-base is empty so the built-in modal requests
+       /api/v1/search/all and proxy-server.js forwards it (CORS).
+       In production use search-base="https://discoverai.levelworks.co". -->
+  <lw-ai-search
+    id="launcher"
+    cta-label="Ask Blog"
+    search-base=""
+    search-key="pk_live_BZfN2SpXzwOh5LDvQmoDDjCkBHnf3ghscE4_6bwddAE"
+    search-index="all"
+    modal-top="0"
+    search-display="panel"
+    feedback
+    style="--lw-ask-bottom: 28px; --lw-ask-right: 28px;"
+  ></lw-ai-search>
+
+  <script type="module">
+    import './lw-ai-search.js';
+
+    const log = document.getElementById('log');
+    const say = msg => { log.textContent = msg; };
+
+    const launcher = document.getElementById('launcher');
+
+    // Launcher position for this demo. This is the same theme layer the
+    // widget styling config lands in, so it exercises exactly the path
+    // widgetPosition: "bar" takes from the API — no btn-type on the tag,
+    // which would pin the mode and lock the backend out.
+    // Set 'floating' (or delete this) for the corner button.
+    launcher.theme = { widget: { position: 'bar' } };
+
+    // Clicking a question opens the <lw-ai-search> modal on this page
+    // and runs that question straight away.
+    launcher.addEventListener('lw-ask-question', e => {
+      say(`question → "${e.detail.question}"`);
+    });
+
+    document.addEventListener('lw-ask-modal-open', e => {
+      say(e.detail.query
+        ? `modal opened, searching:\n"${e.detail.query}"`
+        : 'modal opened (empty search)');
+    });
+
+    launcher.addEventListener('lw-ask-cta', () => {
+      say('cta → open the blog search experience');
+    });
+
+    launcher.addEventListener('lw-ask-toggle', e => {
+      if (!e.detail.open) say('closed — hover again to reopen');
+    });
+
+
+  </script>
+
+</body>
+</html>

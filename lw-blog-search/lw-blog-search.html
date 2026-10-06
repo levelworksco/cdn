@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>lw-blog-search — Demo</title>
+  <style>
+    body {
+      margin: 0;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      padding: 40px 24px;
+      max-width: 680px;
+    }
+  </style>
+</head>
+<body>
+
+  <lw-blog-search
+    id="search"
+    results="87"
+    search-time="33"
+    slider-max="10"
+    slider-step="0.1"
+  ></lw-blog-search>
+
+  <script type="module">
+    import './lw-blog-search.js';
+
+    const el = document.getElementById('search');
+
+    el.addEventListener('search-change', e => {
+      console.log('search:', e.detail.value);
+    });
+
+    el.addEventListener('slider-change', e => {
+      console.log('slider:', e.detail.value);
+    });
+  </script>
+
+</body>
+</html>

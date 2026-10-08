@@ -168,6 +168,7 @@ export class LwBlogOverview extends LitElement {
     color: var(--pl-excerpt-color, #9aa1a8);
     line-height: 1.55;
     margin-bottom: 1.1rem;
+    white-space: normal;
     }
     p:last-of-type { margin-bottom: 0; }
 
@@ -479,10 +480,7 @@ export class LwBlogOverview extends LitElement {
         <h1>${this.heading}</h1>
         <div class="paragraphs">
           ${this.paragraphs.map(para => html`
-            <p>
-              ${para.text}
-              ${this._renderCitation(para.citation, mode, articleIndex)}
-            </p>
+            <p>${para.text}${this._renderCitation(para.citation, mode, articleIndex)}</p>
           `)}
         </div>
         <div class="divider"></div>

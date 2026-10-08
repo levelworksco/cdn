@@ -2006,7 +2006,38 @@ export class LwAiSearch extends LitElement {
       text-align: center;
       color: #888;
     }
-    .modal-loader { padding: 20px; font-size: 14px; }
+    /* Answer-loading skeleton: three grey bars that pulse. */
+    .modal-loader {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 22px;
+      /* same column as .modal-results, so the bars line up with the answer */
+      margin: 8px auto 0;
+      max-width: 900px;
+      padding: 32px 10px;
+      text-align: left;
+    }
+    #ai-search-overlay.as-panel .modal-loader { max-width: 100%; padding: 24px 16px; }
+    .modal-loader.is-hidden { display: none; }
+    .skeleton-line {
+      display: block;
+      height: 14px;
+      border-radius: 999px;
+      /* Solid bars that breathe in and out, one after another. */
+      background: rgba(128, 128, 128, 0.22);
+      animation: lw-skeleton-pulse 1.6s ease-in-out infinite;
+    }
+    .skeleton-line:nth-child(2) { animation-delay: 0.15s; }
+    .skeleton-line:nth-child(3) { animation-delay: 0.3s; }
+    .skeleton-line.is-short { width: 70%; }
+    @keyframes lw-skeleton-pulse {
+      0%, 100% { opacity: 1; }
+      50%      { opacity: 0.35; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .skeleton-line { animation: none; }
+    }
     .modal-empty  { padding: 40px 20px; font-size: 15px; }
 
     .is-hidden { display: none; }
@@ -3960,7 +3991,11 @@ export class LwAiSearch extends LitElement {
             </div>
           </div>
 
-          <div class="modal-loader ${this._loading ? '' : 'is-hidden'}">Searching...</div>
+          <div class="modal-loader ${this._loading ? '' : 'is-hidden'}" role="status" aria-label="Searching">
+            <span class="skeleton-line"></span>
+            <span class="skeleton-line"></span>
+            <span class="skeleton-line is-short"></span>
+          </div>
         </div>
 
         <!-- Outside #ai-search-modal on purpose. In full page the modal

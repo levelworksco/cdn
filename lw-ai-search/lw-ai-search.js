@@ -1346,7 +1346,7 @@ export class LwAiSearch extends LitElement {
       z-index: 3;
       appearance: none;
       border: none;
-      width: 132px;
+      width: 151px;
       padding: 10px 12px 12px;
       border-radius: 10px;
       background: var(--lw-ai-button-bg, var(--lw-ask-accent, #1A1A1A));

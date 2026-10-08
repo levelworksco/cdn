@@ -168,7 +168,6 @@ export class LwBlogOverview extends LitElement {
     color: var(--pl-excerpt-color, #9aa1a8);
     line-height: 1.55;
     margin-bottom: 1.1rem;
-    white-space: pre-line;
     }
     p:last-of-type { margin-bottom: 0; }
 

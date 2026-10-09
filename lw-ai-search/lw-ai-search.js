@@ -1084,21 +1084,27 @@ export class LwAiSearch extends LitElement {
         border-radius: var(--lw-ask-bar-radius-mobile, 14px 14px 0 0);
       }
 
-      .bar-modes {
-        flex-direction: column;
-        gap: 3px;
-        /* the column is taller than one row of icons, so the bar has to be
-           free to grow with it rather than centre-overflow its own box */
-        align-self: center;
-      }
-      .bar-mode { padding: 2px; }
-      .bar-mode svg { width: 14px; height: 14px; }
+      /* The mode switcher is hidden on phones; the bar just shows the
+         first question beside the CTA. */
+      .bar-modes { display: none; }
 
       .bar-body { padding: 0; }
 
-      /* Only the first question fits; the rest stay in the DOM for the
-         scrolling state, which still shows them all. */
-      .bar-fixed .pill:nth-child(n + 2) { display: none; }
+      /* Every question sits in one row the visitor swipes through, a
+         question at a time; the next one peeks in at the edge. */
+      .bar-fixed {
+        flex: 1 1 auto;
+        justify-content: flex-start;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-snap-type: x mandatory;
+        overscroll-behavior-x: contain;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 20px), transparent);
+                mask-image: linear-gradient(90deg, #000 calc(100% - 20px), transparent);
+      }
+      .bar-fixed::-webkit-scrollbar { display: none; }
 
       .bar-fixed .pill,
       .bar-track .pill {
@@ -1106,12 +1112,13 @@ export class LwAiSearch extends LitElement {
         white-space: normal;
         overflow: visible;
         text-overflow: clip;
-        max-width: 100%;
-        padding: 6px 12px;
+        width: min(190px, 56vw);
+        padding: 8px 12px;
         font-size: 11.5px;
         line-height: 1.25;
+        text-align: center;
+        scroll-snap-align: start;
       }
-      .bar-fixed { flex: 1 1 auto; }
 
       .bar > .cta {
         padding: 8px 12px;
@@ -1448,7 +1455,9 @@ export class LwAiSearch extends LitElement {
     }
     #ai-search-overlay.as-panel .powered-by svg,
     #ai-search-overlay.as-panel .powered-by img {
-      width: var(--lw-ask-powered-width, 120px);
+      /* one row here, so it is wider than the stacked lockup it replaces */
+      width: var(--lw-ask-powered-width, 184px);
+      max-width: 100%;
     }
 
     @media (max-width: 560px) {
@@ -1657,6 +1666,9 @@ export class LwAiSearch extends LitElement {
     .hero > p {
       margin-top: 6px;
       margin-bottom: 34px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
       font-size: 14px;
       font-family: var(--lw-ai-subtitle-font, 'Inter', sans-serif);
       color: var(--lw-ai-subtitle-color, #6b7280);
@@ -2099,12 +2111,19 @@ export class LwAiSearch extends LitElement {
     }
   `;
 
-  // "Powered by Levelworks" lockup — the wordmark, logo and white
-  // background are all inside the supplied SVG (see powered-by.svg).
-  static poweredByBadge = html`
-    <svg role="img" aria-label="Powered by Levelworks" width="162" height="47" viewBox="0 0 162 47" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="162" height="47" rx="4" fill="white"/>
+  // "Powered by Levelworks" lockup (see powered-by.svg). Stacked on the full
+  // page; in the panel and on phones the words slide down beside the logo so
+  // it reads as one row. Same paths either way -- only viewBox and the two
+  // group offsets change.
+  static poweredBy(row = false) {
+    return html`
+    <svg role="img" aria-label="Powered by Levelworks" width=${row ? 184 : 162} height=${row ? 16 : 47}
+         viewBox=${row ? '15 26 184 16' : '0 0 162 47'} fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="162" height="47" rx="4" fill=${row ? 'none' : 'white'}/>
+    <g transform=${row ? 'translate(0 18.5)' : 'translate(0 0)'}>
     <path d="M21.3419 10.252C23.1659 10.252 24.2939 11.224 24.2939 12.832C24.2939 14.392 23.2019 15.412 21.3179 15.4H18.4379V19H17.3219V10.252H21.3419ZM21.2819 14.428C22.4459 14.428 23.1299 13.912 23.1299 12.82C23.1299 11.8 22.5059 11.26 21.2819 11.248H18.4379V14.428H21.2819ZM25.1142 15.64C25.1142 13.516 26.3862 12.124 28.3302 12.124C30.2742 12.124 31.5222 13.504 31.5222 15.64C31.5222 17.752 30.2742 19.12 28.3302 19.12C26.3742 19.12 25.1142 17.74 25.1142 15.64ZM26.2182 15.628C26.2182 17.248 26.9742 18.184 28.3182 18.172C29.6382 18.172 30.4182 17.236 30.4182 15.616C30.4182 13.996 29.6502 13.072 28.3302 13.072C26.9982 13.072 26.2182 14.032 26.2182 15.628ZM33.9401 19L32.0441 12.244H33.1841L34.6601 17.932L36.0401 12.244H37.3121L38.7041 17.884L40.1561 12.244H41.2601L39.4241 19H38.0441L36.6761 13.54L35.3681 19H33.9401ZM44.9703 19.12C43.0623 19.12 41.7783 17.836 41.7783 15.628C41.7783 13.528 42.9303 12.136 44.8863 12.124C46.9263 12.124 48.0423 13.636 47.9103 15.904H42.8943C42.8823 17.428 43.7343 18.196 44.9943 18.196C46.0263 18.196 46.6623 17.692 46.8783 16.912L47.8743 17.14C47.5623 18.376 46.4823 19.12 44.9703 19.12ZM42.8943 15.064H46.7943C46.7703 13.816 46.0383 13.012 44.8863 13.012C43.7343 13.012 42.9543 13.744 42.8943 15.064ZM49.0289 19V12.244H49.9889L50.0609 13.372C50.4209 12.616 51.0689 12.196 51.8729 12.196C52.0649 12.196 52.2929 12.22 52.3889 12.232V13.264H52.3289C52.1969 13.228 52.0169 13.216 51.8249 13.204C51.0209 13.204 50.3609 13.66 50.1089 14.416V19H49.0289ZM56.021 19.12C54.113 19.12 52.829 17.836 52.829 15.628C52.829 13.528 53.981 12.136 55.937 12.124C57.977 12.124 59.093 13.636 58.961 15.904H53.945C53.933 17.428 54.785 18.196 56.045 18.196C57.077 18.196 57.713 17.692 57.929 16.912L58.925 17.14C58.613 18.376 57.533 19.12 56.021 19.12ZM53.945 15.064H57.845C57.821 13.816 57.089 13.012 55.937 13.012C54.785 13.012 54.005 13.744 53.945 15.064ZM59.7548 15.664C59.7548 13.504 60.8948 12.136 62.7068 12.124C63.7508 12.124 64.5548 12.592 64.9868 13.384V9.52H66.0668V19H65.0588L64.9748 17.812C64.6028 18.616 63.7268 19.12 62.6708 19.12C60.8708 19.12 59.7548 17.776 59.7548 15.664ZM60.8708 15.676C60.8708 17.272 61.6028 18.184 62.8748 18.184C64.1348 18.184 64.9748 17.344 64.9868 16.048V15.256C64.9868 13.936 64.1708 13.084 62.8988 13.072C61.6028 13.072 60.8708 14.008 60.8708 15.676ZM70.6851 19V9.52H71.7651V13.384C72.2091 12.568 73.0251 12.124 74.0571 12.124C75.8451 12.124 76.9851 13.504 76.9971 15.664C76.9971 17.776 75.8811 19.12 74.0811 19.12C73.0131 19.12 72.1491 18.628 71.7651 17.812L71.6811 19H70.6851ZM71.7651 16.144C71.7651 17.344 72.6291 18.184 73.8651 18.184C75.1491 18.184 75.8811 17.272 75.8811 15.676C75.8811 14.008 75.1611 13.084 73.8531 13.072C72.5811 13.072 71.7531 13.936 71.7651 15.256V16.144ZM78.5697 21.124C78.3417 21.124 78.0417 21.064 77.8497 20.992V20.104H77.9097C78.0057 20.164 78.2577 20.212 78.5337 20.212C79.0497 20.212 79.4097 19.972 79.6017 19.48L79.9737 18.556L77.3217 12.244H78.4977L79.7577 15.472C80.0577 16.252 80.2737 16.78 80.5257 17.512C80.7897 16.78 81.0297 16.204 81.3177 15.46L82.5777 12.244H83.6817L80.6337 19.756C80.2377 20.716 79.6257 21.124 78.5697 21.124Z" fill="#595959"/>
+    </g>
+    <g transform=${row ? 'translate(77 0)' : 'translate(0 0)'}>
     <path d="M16 27.373H18.6039V39.6542H16V27.373Z" fill="black"/>
     <path d="M26.0469 27.373H28.2788V39.6542H26.0469V27.373Z" fill="black"/>
     <path d="M24.9266 37.2335C24.9266 38.5694 23.7608 39.6525 22.3227 39.6525C20.8846 39.6525 19.7188 38.5694 19.7188 37.2335C19.7188 35.8975 20.8846 34.8145 22.3227 34.8145C23.7608 34.8145 24.9266 35.8975 24.9266 37.2335Z" fill="#F58635"/>
@@ -2129,8 +2148,10 @@ export class LwAiSearch extends LitElement {
     <path d="M45.4219 35.3808C45.4219 34.5977 45.5735 33.8917 45.8881 33.2731L45.8886 33.2721L45.8892 33.271C46.2079 32.6545 46.6295 32.1632 47.1581 31.8106C47.6961 31.4485 48.286 31.2637 48.9198 31.2637C49.7901 31.2637 50.5076 31.5725 51.0267 32.2072H51.0266C51.5506 32.8359 51.7859 33.7059 51.7859 34.7633V34.9155L51.4971 35.2043H47.3468C47.383 35.4716 47.452 35.7273 47.5532 35.9722C47.691 36.2966 47.9081 36.5596 48.2127 36.7659C48.506 36.9582 48.9222 37.0718 49.4931 37.0718V37.4394L49.3788 37.4379C48.8332 37.424 48.3883 37.3095 48.0439 37.0944L48.0086 37.0718C47.6461 36.8267 47.3815 36.5081 47.2149 36.116C47.0484 35.7141 46.9603 35.2877 46.9505 34.8367H51.345L51.4184 34.7633C51.4184 33.7852 51.2069 33.0278 50.7839 32.4913L50.7424 32.4401C50.3015 31.9009 49.6939 31.6313 48.9198 31.6313C48.3613 31.6313 47.842 31.793 47.3619 32.1165C46.8916 32.4302 46.5095 32.8713 46.2156 33.4398C45.9314 33.9986 45.7893 34.6456 45.7893 35.3808L45.7901 35.4694C45.8068 36.3792 46.0808 37.1143 46.6123 37.6746C47.1439 38.2349 47.864 38.5238 48.7726 38.5413L48.8611 38.5422C49.4588 38.5421 49.9781 38.3902 50.419 38.0864C50.8697 37.7825 51.2078 37.4197 51.4331 36.9982V36.8512H51.389C50.664 37.2433 50.032 37.4394 49.4931 37.4394V37.0718C49.9471 37.0718 50.5169 36.9049 51.2143 36.5278L51.2961 36.4836H51.8006V37.0903L51.7572 37.1716C51.4999 37.6528 51.1178 38.0584 50.6244 38.3911L50.6242 38.391C50.1157 38.7405 49.5229 38.9097 48.8611 38.9097C47.863 38.9097 47.0307 38.6126 46.4057 37.9891L46.3458 37.9277C45.7202 37.2682 45.4219 36.4066 45.4219 35.3808ZM48.7646 32.2799C49.159 32.2972 49.4802 32.4437 49.7282 32.7193C50.0026 33.0134 50.1936 33.4938 50.3014 34.1604H46.9798C47.0484 33.5625 47.2297 33.1017 47.5236 32.7782C47.8274 32.4449 48.2144 32.2783 48.6847 32.2783L48.7646 32.2799ZM48.6847 32.6459C48.3127 32.6459 48.0259 32.7727 47.7951 33.0259C47.6306 33.2072 47.5004 33.4576 47.4174 33.7928H49.8505C49.7482 33.398 49.6115 33.133 49.4596 32.9702L49.4573 32.9678L49.4551 32.9652C49.2669 32.7562 49.0221 32.6459 48.6847 32.6459Z" fill="black"/>
     <path d="M42.3197 35.1322L41.3204 37.5877H37.7489V29.5152L39.0716 28.9271V28.6918H35.2502V28.9271L36.4261 29.5152V37.573L35.2502 38.1612V38.3964H42.555V35.1322H42.3197ZM42.9224 38.764H34.8828V37.9339L36.0587 37.3457V29.7424L34.8828 29.1543V28.3242H39.439V29.166L38.1163 29.754V37.2201H41.0731L42.0726 34.7646H42.9224V38.764Z" fill="black"/>
     <path d="M97.0931 35.0014C97.0931 37.1595 95.3443 38.909 93.1872 38.909C91.03 38.909 89.2812 37.1595 89.2812 35.0014C89.2812 32.8433 91.03 31.0938 93.1872 31.0938C95.3443 31.0938 97.0931 32.8433 97.0931 35.0014Z" fill="#F58635"/>
+    </g>
     </svg>
   `;
+  }
 
   static searchIcon = html`
     <svg class="fab-icon" width="32" height="32" viewBox="0 0 32 32"
@@ -2736,6 +2757,8 @@ export class LwAiSearch extends LitElement {
    * fixed four.
    */
   get _activeBarMode() {
+    // No switcher on phones: always the swipeable row of questions.
+    if (this._isPhone) return 'questions';
     const chosen = String(this._barMode || this.barMode || '').trim().toLowerCase();
     return LwAiSearch.barModes.includes(chosen) ? chosen : 'questions';
   }
@@ -2765,6 +2788,8 @@ export class LwAiSearch extends LitElement {
    * the backend config, the precedence every other theme value follows.
    */
   get _searchDisplayMode() {
+    // Phones always get the panel layout; there is no layout switcher there.
+    if (this._isPhone) return 'panel';
     // Precedence: what the visitor picked, then the tag, then the config.
     const chosen = String(this._displayOverride ?? '').trim();
     if (chosen) return normalizeSearchDisplay(chosen);
@@ -2801,6 +2826,11 @@ export class LwAiSearch extends LitElement {
       detail: { mode: next }, bubbles: true, composed: true,
     }));
   };
+
+  /** Same breakpoint the phone styles use (max-width: 560px). */
+  get _isPhone() {
+    return window.matchMedia('(max-width: 560px)').matches;
+  }
 
   get _isPanel() {
     return this._searchDisplayMode === 'panel';
@@ -3122,7 +3152,7 @@ export class LwAiSearch extends LitElement {
 
     // The full-page modal owns the viewport, so the page behind it is
     // locked. The panel leaves the page usable and pushes it aside.
-    if (this._isPanel) {
+    if (this._isPanel && !this._isPhone) {
       this.updateComplete.then(() => this._pushPage(true));
     } else {
       document.body.style.overflow = 'hidden';
@@ -4053,7 +4083,7 @@ export class LwAiSearch extends LitElement {
 
         <!-- Same reason as the head above. -->
         <div class="powered-by">
-          ${LwAiSearch.poweredByBadge}
+          ${LwAiSearch.poweredBy(this._isPanel)}
         </div>
 
         ${this._showFeedbackCta ? html`
@@ -4230,10 +4260,15 @@ export class LwAiSearch extends LitElement {
         </div>`;
     }
 
+    // On phones every question is in the row and the visitor swipes
+    // through them; elsewhere it is the fixed first few.
+    const shown = this._isPhone
+      ? questions
+      : questions.slice(0, LwAiSearch.barFixedQuestions);
     return html`
       <div class="bar-body">
         <div class="bar-fixed">
-          ${questions.slice(0, LwAiSearch.barFixedQuestions).map(pill)}
+          ${shown.map(pill)}
         </div>
       </div>`;
   }

@@ -3978,6 +3978,7 @@ export class LwAiSearch extends LitElement {
                 <lw-blog-list
                   container-background="transparent"
                   default-view="list"
+                  default-sort="default"
                   hide-header
                   .autoLoad=${false}
                   .posts=${this._furtherReadingResults.map(item => this._toPost(item))}

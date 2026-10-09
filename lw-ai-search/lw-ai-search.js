@@ -1036,7 +1036,7 @@ export class LwAiSearch extends LitElement {
       align-items: center;
       gap: 10px;
       width: max-content;
-      animation: lw-bar-scroll var(--lw-ask-bar-scroll-duration, 84s) linear infinite;
+      animation: lw-bar-scroll var(--lw-ask-bar-scroll-duration, 250s) linear infinite;
     }
     .bar-marquee:hover .bar-track { animation-play-state: paused; }
     @keyframes lw-bar-scroll {

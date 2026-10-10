@@ -1,7 +1,10 @@
 import { LitElement, html, css }
   from 'https://cdn.jsdelivr.net/gh/lit/dist@3/all/lit-all.min.js';
 import '../lw-blog-list/lw-blog-list.js';
-import '../lw-feedback-card/lw-feedback-card.js';
+// The feedback card is switched off for now -- the CTA links to the
+// contact page instead (feedback-cta-href). Kept, not removed, so it can
+// come back; uncomment this and the card markup in _renderModal.
+// import '../lw-feedback-card/lw-feedback-card.js';
 
 const DEFAULT_AI_THEME = {
   widget: {
@@ -569,6 +572,9 @@ export class LwAiSearch extends LitElement {
     },
     feedbackCta: { type: String, attribute: 'feedback-cta' },
     feedbackCtaPage: { type: String, attribute: 'feedback-cta-page' },
+    // Where both CTAs go. Always opens in a new tab, so the search the
+    // reader is in the middle of stays where it is.
+    feedbackCtaHref: { type: String, attribute: 'feedback-cta-href' },
     feedbackUrl: { type: String, attribute: 'feedback-url' },
     // A hosted form to show instead of the built-in one -- a Formbricks
     // link survey, say. Passed straight through to the card.
@@ -1057,7 +1063,10 @@ export class LwAiSearch extends LitElement {
       padding: 7px 14px;
     }
 
-    .bar > .cta { flex: none; }
+    /* No outline on the bar's CTA, whatever Widget › Button › Outline
+       says -- the outline is meant for a button standing on the page,
+       and here it drew a white ring inside the bar. */
+    .bar > .cta { flex: none; border: none; }
 
     @media (prefers-reduced-motion: reduce) {
       .bar-track { animation: none; }
@@ -1078,9 +1087,10 @@ export class LwAiSearch extends LitElement {
     @media (max-width: 560px) {
       .bar {
         gap: 8px;
-        padding: 8px 10px;
+        padding: 8px 10px 10px;
         min-height: 0;
-        flex-wrap: nowrap;
+        /* the questions take the first line, the CTA the one below */
+        flex-wrap: wrap;
         border-radius: var(--lw-ask-bar-radius-mobile, 14px 14px 0 0);
       }
 
@@ -1088,13 +1098,15 @@ export class LwAiSearch extends LitElement {
          first question beside the CTA. */
       .bar-modes { display: none; }
 
-      .bar-body { padding: 0; }
+      .bar-body { flex-basis: 100%; padding: 0; }
 
       /* Every question sits in one row the visitor swipes through, a
          question at a time; the next one peeks in at the edge. */
       .bar-fixed {
         flex: 1 1 auto;
         justify-content: flex-start;
+        /* every pill as tall as the tallest one in the row */
+        align-items: stretch;
         overflow-x: auto;
         overflow-y: hidden;
         scroll-snap-type: x mandatory;
@@ -1113,6 +1125,13 @@ export class LwAiSearch extends LitElement {
         overflow: visible;
         text-overflow: clip;
         width: min(190px, 56vw);
+        /* Always two lines tall, so a short question that fits on one
+           still matches its neighbours. */
+        box-sizing: border-box;
+        min-height: calc(2 * 1.25em + 18px);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         padding: 8px 12px;
         font-size: 11.5px;
         line-height: 1.25;
@@ -1120,9 +1139,14 @@ export class LwAiSearch extends LitElement {
         scroll-snap-align: start;
       }
 
+      /* 16px, or iOS zooms the page in on focus (see the modal field). */
+      .bar-form input { font-size: 16px; }
+
       .bar > .cta {
-        padding: 8px 12px;
-        font-size: 12px;
+        flex-basis: 100%;
+        max-width: none;
+        padding: 10px 12px;
+        font-size: 13px;
       }
       .bar > .cta svg { width: 13px; height: 13px; }
 
@@ -1302,6 +1326,11 @@ export class LwAiSearch extends LitElement {
     #ai-search-overlay.as-panel #ai-search-modal.post-commit .hero {
       flex: 0 0 auto;
     }
+    /* ...and starts from the top. The modal's own centring would
+       otherwise hold the head mid-panel until the answer arrives. */
+    #ai-search-overlay.as-panel #ai-search-modal.post-commit {
+      justify-content: flex-start;
+    }
 
     #ai-search-overlay.as-panel .suggested,
     #ai-search-overlay.as-panel .modal-results {
@@ -1363,6 +1392,8 @@ export class LwAiSearch extends LitElement {
       font-weight: 600;
       line-height: 1.35;
       text-align: left;
+      text-decoration: none;
+      box-sizing: border-box;
       cursor: pointer;
       box-shadow: 0 6px 18px rgba(16, 18, 27, 0.18);
     }
@@ -1441,6 +1472,7 @@ export class LwAiSearch extends LitElement {
       font-family: inherit;
       font-size: 14px;
       font-weight: 600;
+      text-decoration: none;
       cursor: pointer;
     }
     .panel-cta:hover { filter: brightness(0.95); }
@@ -1463,6 +1495,55 @@ export class LwAiSearch extends LitElement {
     @media (max-width: 560px) {
       /* no room to squeeze a phone; the panel takes the screen */
       #ai-search-overlay.as-panel { width: 100vw; }
+
+      /* Once there is an answer, a phone has no room to keep the title
+         and subtitle on screen as well. The panel scrolls as one page
+         instead: they go up with the answer, and only the search field
+         stays, held just under the logo and close button. */
+      #ai-search-overlay.as-panel #ai-search-modal.post-commit {
+        overflow-y: auto;
+        overscroll-behavior: contain;
+      }
+      /* The hero steps out of the way so the field can stick to the
+         modal -- a sticky box cannot leave its own parent, and the
+         hero ends right under the field. */
+      #ai-search-overlay.as-panel #ai-search-modal.post-commit .hero {
+        display: contents;
+      }
+      #ai-search-overlay.as-panel #ai-search-modal.post-commit .hero h1 {
+        padding: 18px 16px 0;
+      }
+      #ai-search-overlay.as-panel #ai-search-modal.post-commit .hero > p {
+        padding: 0 16px;
+      }
+      #ai-search-overlay.as-panel #ai-search-modal.post-commit .search-bar {
+        position: sticky;
+        /* measured inside the modal's top padding, so 0 lands it right
+           under the logo row */
+        top: 0;
+        z-index: 1;
+        padding: 6px 16px 10px;
+        background: var(--lw-ai-page-bg, var(--lw-ask-modal-bg, #f4f4f4));
+      }
+      /* Further Reading tiles: room between the image and the author row
+         under it, and a title that holds its own beside the image. */
+      #ai-search-overlay.as-panel .modal-results {
+        --pl-image-margin-bottom-mobile: 10px;
+        --pl-title-font-size-mobile: 15px;
+      }
+      #ai-search-overlay.as-panel #ai-search-modal.post-commit .modal-results,
+      #ai-search-overlay.as-panel #ai-search-modal.post-commit .modal-loader {
+        flex: none;
+        overflow: visible;
+      }
+      /* A solid band behind the logo and close button, the height of the
+         modal's top padding, so the answer passes under it rather than
+         through it. */
+      #ai-search-overlay.as-panel.is-answered .modal-head::before {
+        display: block;
+        height: 56px;
+        background: var(--lw-ai-page-bg, var(--lw-ask-modal-bg, #f4f4f4));
+      }
     }
 
     #ai-search-modal {
@@ -1936,6 +2017,13 @@ export class LwAiSearch extends LitElement {
       line-height: 0;
       pointer-events: none;
     }
+    /* The box stays out of the way; only the lockup itself takes a click. */
+    .powered-by a {
+      display: inline-block;
+      pointer-events: auto;
+      border-radius: 4px;
+    }
+    .powered-by a:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 
     .powered-by svg {
       display: block;
@@ -2030,7 +2118,9 @@ export class LwAiSearch extends LitElement {
       padding: 32px 10px;
       text-align: left;
     }
-    #ai-search-overlay.as-panel .modal-loader { max-width: 100%; padding: 24px 16px; }
+    /* width, too: the panel is a flex column centred on its cross axis,
+       which shrank the bars to nothing. */
+    #ai-search-overlay.as-panel .modal-loader { width: 100%; max-width: 100%; padding: 24px 16px; }
     .modal-loader.is-hidden { display: none; }
     .skeleton-line {
       display: block;
@@ -2068,6 +2158,10 @@ export class LwAiSearch extends LitElement {
       .suggested-chips { gap: 8px; }
       .suggested-chip { padding: 8px 13px; font-size: 12.5px; }
       .modal-results { width: 100%; }
+      /* iOS Safari zooms the page in when a field under 16px is focused,
+         and does not zoom back out -- the answer then arrives cut off at
+         the sides. 16px is the size that stops it. */
+      .search-input-wrapper textarea { font-size: 16px; }
     }
 
     @media screen and (orientation: landscape) and (max-height: 500px) {
@@ -2268,6 +2362,7 @@ export class LwAiSearch extends LitElement {
     // The full page has room for a sentence where the panel bar has room
     // for a name.
     this.feedbackCtaPage = 'Transform the way your team searches with AI';
+    this.feedbackCtaHref = 'https://www.levelworks.co/company/contact';
     this.feedbackUrl = '';
     // Levelworks own lead form, the same one for every site that turns
     // the card on. Point feedback-embed elsewhere, or at nothing, to use
@@ -3378,6 +3473,8 @@ export class LwAiSearch extends LitElement {
     this._showFeatures = false;
     this._showResults = true;
     this._postCommit = true;
+    // On a phone the keyboard would otherwise stay up over the answer.
+    if (this._isPhone) this._input?.blur();
     // /api/v1/search/{index} disabled for now — every search runs through
     // /summary only (see _fetchSummary above, which now supplies Further
     // Reading too). /summary/stream is unused — see _fetchSummaryStream.
@@ -3946,7 +4043,7 @@ export class LwAiSearch extends LitElement {
     const questions = this._suggestedQuestions.slice(0, questionLimit);
     return html`
       <div id="ai-search-overlay"
-           class="${this.modalOpen ? 'open' : ''} ${this._isPanel ? 'as-panel' : ''} ${this._showFeedbackCta ? 'has-cta' : ''}"
+           class="${this.modalOpen ? 'open' : ''} ${this._isPanel ? 'as-panel' : ''} ${this._showFeedbackCta ? 'has-cta' : ''} ${this._postCommit ? 'is-answered' : ''}"
            style=${[this._modalTopVar, this._themeStyle].filter(Boolean).join(';')}
            @click=${this._onOverlayClick}>
         <div id="ai-search-modal"
@@ -4069,6 +4166,8 @@ export class LwAiSearch extends LitElement {
           </div>
         </div>
 
+        ${/* Feedback card: switched off, the CTAs below link to the
+             contact page instead. Kept for when it comes back.
         ${this._feedbackOpen && !this._isPanel ? html`
           <div class="feedback-scrim" @click=${this._onFeedbackDismiss}></div>` : ''}
 
@@ -4081,29 +4180,34 @@ export class LwAiSearch extends LitElement {
             @feedback-submit=${this._onFeedbackSubmit}
             @feedback-dismiss=${this._onFeedbackDismiss}
           ></lw-feedback-card>` : ''}
+        */ ''}
 
         <!-- Same reason as the head above. -->
         <div class="powered-by">
-          ${LwAiSearch.poweredBy(this._isPanel)}
+          <a href="https://www.levelworks.co" target="_blank" rel="noopener noreferrer">
+            ${LwAiSearch.poweredBy(this._isPanel)}
+          </a>
         </div>
 
         ${this._showFeedbackCta ? html`
-          <button class="panel-cta" @click=${this._openFeedback}>
+          <a class="panel-cta" href=${this.feedbackCtaHref}
+             target="_blank" rel="noopener noreferrer">
             <span>${this.feedbackCta}</span>
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M5 12h13M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2"
                     stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-          </button>` : ''}
+          </a>` : ''}
 
         ${this._showFeedbackPageCta ? html`
-          <button class="page-cta" @click=${this._openFeedback}>
+          <a class="page-cta" href=${this.feedbackCtaHref}
+             target="_blank" rel="noopener noreferrer">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M5 12h13M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2"
                     stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <span>${this.feedbackCtaPage}</span>
-          </button>` : ''}
+          </a>` : ''}
       </div>
     `;
   }

@@ -293,8 +293,14 @@ export class LwBlogListItem extends LitElement {
         padding: 1.1rem 0;
       }
       .list-content { align-self: flex-start; }
-      .list-image   { align-self: flex-start; border-radius: 12px; }
-      .list-title   { font-size: 14px; }
+      /* Both default to what every page has always had; a host that wants
+         more room under the image, or a different title size, sets them. */
+      .list-image   {
+        align-self: flex-start;
+        border-radius: 12px;
+        margin-bottom: var(--pl-image-margin-bottom-mobile, 0);
+      }
+      .list-title   { font-size: var(--pl-title-font-size-mobile, 14px); }
       /* Flow the number inline with the title text (like "1. Why Is My…")
          so wrapped lines stay flush-left instead of hanging-indented under
          the first line of text — too cramped at narrow widths. */

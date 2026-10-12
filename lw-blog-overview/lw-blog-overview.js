@@ -162,6 +162,15 @@ export class LwBlogOverview extends LitElement {
       letter-spacing: 0;
     }
 
+    /* Tiny sparkle beside the heading; --lw-ai-sparkle-color recolours it. */
+    .ai-mark {
+      width: 24px;
+      height: 24px;
+      margin-left: 6px;
+      vertical-align: super;
+      color: var(--lw-ai-sparkle-color, #F58635);
+    }
+
     /* Matches the blog detail page's Body text (lw-blog-details.js .pd-body). */
     p {
           font-size: var(--pl-excerpt-font-size, 13px);
@@ -477,7 +486,10 @@ export class LwBlogOverview extends LitElement {
 
     return html`
       <div class="container">
-        <h1>${this.heading}</h1>
+        <h1>${this.heading}<svg class="ai-mark" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M10 3l1.9 5.1L17 10l-5.1 1.9L10 17l-1.9-5.1L3 10l5.1-1.9L10 3z"/>
+          <path d="M18 14l.9 2.1L21 17l-2.1.9L18 20l-.9-2.1L15 17l2.1-.9L18 14z"/>
+        </svg></h1>
         <div class="paragraphs">
           ${this.paragraphs.map(para => html`
             <p>${para.text}${this._renderCitation(para.citation, mode, articleIndex)}</p>

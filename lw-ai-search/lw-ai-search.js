@@ -509,6 +509,8 @@ export class LwAiSearch extends LitElement {
 
   // The fixed state shows this many; the scrolling one shows them all.
   static barFixedQuestions = 4;
+  // Longest question either search field accepts; longer pastes are cut.
+  static maxQueryLength = 150;
 
   // Search-page cards are large, so only the first four fit the row. Chips
   // wrap freely, so they take everything the backend sends, up to 40 --
@@ -1036,7 +1038,7 @@ export class LwAiSearch extends LitElement {
       align-items: center;
       gap: 10px;
       width: max-content;
-      animation: lw-bar-scroll var(--lw-ask-bar-scroll-duration, 250s) linear infinite;
+      animation: lw-bar-scroll var(--lw-ask-bar-scroll-duration, 350s) linear infinite;
     }
     .bar-marquee:hover .bar-track { animation-play-state: paused; }
     @keyframes lw-bar-scroll {
@@ -1365,6 +1367,32 @@ export class LwAiSearch extends LitElement {
       text-align: left;
       cursor: pointer;
       box-shadow: 0 6px 18px rgba(16, 18, 27, 0.18);
+    }
+    /* A soft band of light that crosses the call to action every few
+       seconds, so it is noticed without needing to move or flash. */
+    .page-cta,
+    .panel-cta { overflow: hidden; }
+    .page-cta::after,
+    .panel-cta::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 45%;
+      background: linear-gradient(100deg,
+        transparent 0%, rgba(255, 255, 255, 0.28) 50%, transparent 100%);
+      transform: translateX(-130%) skewX(-18deg);
+      pointer-events: none;
+      animation: lw-cta-shine var(--lw-ask-cta-shine-interval, 5s) ease-in-out 1.5s infinite;
+    }
+    @keyframes lw-cta-shine {
+      0%        { transform: translateX(-130%) skewX(-18deg); }
+      18%, 100% { transform: translateX(330%) skewX(-18deg); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .page-cta::after,
+      .panel-cta::after { animation: none; display: none; }
     }
     .page-cta:hover { filter: brightness(0.95); }
     .page-cta:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
@@ -1742,6 +1770,21 @@ export class LwAiSearch extends LitElement {
     .search-input-wrapper textarea::placeholder {
       color: var(--lw-ai-search-placeholder, #9aa1a8);
     }
+
+    /* Characters left, beside the clear button; amber near the limit, red at it. */
+    .char-count {
+      flex: none;
+      min-width: 3ch;
+      margin-left: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+      color: var(--lw-ai-search-placeholder, #9aa1a8);
+    }
+    .char-count.is-low { color: #e8890c; }
+    .char-count.is-full { color: #d93025; }
+    .char-count.is-hidden { visibility: hidden; }
 
     .clear-btn {
       border: none;
@@ -3969,11 +4012,21 @@ export class LwAiSearch extends LitElement {
                         stroke-linecap="round" opacity="0.8"/>
                 </svg>
                 <textarea id="searchInput" rows="1" autocomplete="off"
+                          maxlength=${LwAiSearch.maxQueryLength}
                           enterkeyhint="search" spellcheck="false"
                           placeholder=${this._resolvedTheme.text.search.placeholder || this.searchPlaceholder}
                           .value=${this._inputValue}
                           @input=${this._onModalInput}
                           @keydown=${this._onModalKeydown}></textarea>
+                ${(() => {
+                  const left = LwAiSearch.maxQueryLength - (this._inputValue ?? '').length;
+                  const state = left <= 0 ? 'is-full' : left <= 20 ? 'is-low' : '';
+                  return html`
+                    <span class="char-count ${this._inputValue ? '' : 'is-hidden'} ${state}"
+                          role="status"
+                          title="${left} characters remaining"
+                          aria-label="${left} characters remaining">${left}</span>`;
+                })()}
                 <button class="clear-btn ${this._inputValue ? '' : 'is-hidden'}"
                         aria-label="Clear search"
                         @click=${this._onModalClear}>
@@ -4237,6 +4290,7 @@ export class LwAiSearch extends LitElement {
           <form class="bar-form" @submit=${this._onBarSubmit}>
             ${LwAiSearch.searchIcon}
             <input type="text"
+                   maxlength=${LwAiSearch.maxQueryLength}
                    autocomplete="off"
                    placeholder=${this.barPlaceholder}
                    aria-label=${this.barPlaceholder} />

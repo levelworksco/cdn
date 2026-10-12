@@ -512,6 +512,8 @@ export class LwAiSearch extends LitElement {
 
   // The fixed state shows this many; the scrolling one shows them all.
   static barFixedQuestions = 4;
+  // Longest question either search field accepts; longer pastes are cut.
+  static maxQueryLength = 150;
 
   // Search-page cards are large, so only the first four fit the row. Chips
   // wrap freely, so they take everything the backend sends, up to 40 --
@@ -590,6 +592,7 @@ export class LwAiSearch extends LitElement {
     _showFeatures: { state: true },
     _showResults: { state: true },
     _resultsReady: { state: true },
+    _multiline: { state: true },
     _postCommit: { state: true },
     _feedbackOpen: { state: true },
     _results: { state: true },
@@ -1042,7 +1045,7 @@ export class LwAiSearch extends LitElement {
       align-items: center;
       gap: 10px;
       width: max-content;
-      animation: lw-bar-scroll var(--lw-ask-bar-scroll-duration, 84s) linear infinite;
+      animation: lw-bar-scroll var(--lw-ask-bar-scroll-duration, 350s) linear infinite;
     }
     .bar-marquee:hover .bar-track { animation-play-state: paused; }
     @keyframes lw-bar-scroll {
@@ -1091,7 +1094,6 @@ export class LwAiSearch extends LitElement {
         min-height: 0;
         /* the questions take the first line, the CTA the one below */
         flex-wrap: wrap;
-        border-radius: var(--lw-ask-bar-radius-mobile, 14px 14px 0 0);
       }
 
       /* The mode switcher is hidden on phones; the bar just shows the
@@ -1365,6 +1367,15 @@ export class LwAiSearch extends LitElement {
     #ai-search-overlay.as-panel .suggested-chips { max-width: 100%; }
     #ai-search-overlay.as-panel .further-reading { margin: 18px 0 10px; font-size: 15px; }
 
+    /* On phones and tablets both headings -- "AI Answer" and "Further
+       Reading" -- are 24px. */
+    @media (max-width: 1024px) {
+      #ai-search-overlay.as-panel .further-reading { font-size: 24px; }
+      /* one class more than the panel's own 15px rule further down, which
+         would otherwise win by coming later */
+      #ai-search-overlay.as-panel .modal-results .modal-overview { --lw-overview-heading-size: 24px; }
+    }
+
     /* The card is fixed to the foot of the panel, the full width of it,
        and rises over the results rather than pushing them aside -- it is
        asked for, and dismissable, so it must not move the reading. It
@@ -1382,7 +1393,7 @@ export class LwAiSearch extends LitElement {
       z-index: 3;
       appearance: none;
       border: none;
-      width: 151px;
+      width: 162px;
       padding: 10px 12px 12px;
       border-radius: 10px;
       background: var(--lw-ai-button-bg, var(--lw-ask-accent, #1A1A1A));
@@ -1396,6 +1407,32 @@ export class LwAiSearch extends LitElement {
       box-sizing: border-box;
       cursor: pointer;
       box-shadow: 0 6px 18px rgba(16, 18, 27, 0.18);
+    }
+    /* A soft band of light that crosses the call to action every few
+       seconds, so it is noticed without needing to move or flash. */
+    .page-cta,
+    .panel-cta { overflow: hidden; }
+    .page-cta::after,
+    .panel-cta::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 45%;
+      background: linear-gradient(100deg,
+        transparent 0%, rgba(255, 255, 255, 0.28) 50%, transparent 100%);
+      transform: translateX(-130%) skewX(-18deg);
+      pointer-events: none;
+      animation: lw-cta-shine var(--lw-ask-cta-shine-interval, 5s) ease-in-out 1.5s infinite;
+    }
+    @keyframes lw-cta-shine {
+      0%        { transform: translateX(-130%) skewX(-18deg); }
+      18%, 100% { transform: translateX(330%) skewX(-18deg); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .page-cta::after,
+      .panel-cta::after { animation: none; display: none; }
     }
     .page-cta:hover { filter: brightness(0.95); }
     .page-cta:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
@@ -1495,55 +1532,57 @@ export class LwAiSearch extends LitElement {
     @media (max-width: 560px) {
       /* no room to squeeze a phone; the panel takes the screen */
       #ai-search-overlay.as-panel { width: 100vw; }
+    }
 
-      /* Once there is an answer, a phone has no room to keep the title
-         and subtitle on screen as well. The panel scrolls as one page
-         instead: they go up with the answer, and only the search field
-         stays, held just under the logo and close button. */
-      #ai-search-overlay.as-panel #ai-search-modal.post-commit {
-        overflow-y: auto;
-        overscroll-behavior: contain;
-      }
-      /* The hero steps out of the way so the field can stick to the
-         modal -- a sticky box cannot leave its own parent, and the
-         hero ends right under the field. */
-      #ai-search-overlay.as-panel #ai-search-modal.post-commit .hero {
-        display: contents;
-      }
-      #ai-search-overlay.as-panel #ai-search-modal.post-commit .hero h1 {
-        padding: 18px 16px 0;
-      }
-      #ai-search-overlay.as-panel #ai-search-modal.post-commit .hero > p {
-        padding: 0 16px;
-      }
-      #ai-search-overlay.as-panel #ai-search-modal.post-commit .search-bar {
-        position: sticky;
-        /* measured inside the modal's top padding, so 0 lands it right
-           under the logo row */
-        top: 0;
-        z-index: 1;
-        padding: 6px 16px 10px;
-        background: var(--lw-ai-page-bg, var(--lw-ask-modal-bg, #f4f4f4));
-      }
-      /* Further Reading tiles: room between the image and the author row
-         under it, and a title that holds its own beside the image. */
-      #ai-search-overlay.as-panel .modal-results {
-        --pl-image-margin-bottom-mobile: 10px;
-        --pl-title-font-size-mobile: 15px;
-      }
-      #ai-search-overlay.as-panel #ai-search-modal.post-commit .modal-results,
-      #ai-search-overlay.as-panel #ai-search-modal.post-commit .modal-loader {
-        flex: none;
-        overflow: visible;
-      }
-      /* A solid band behind the logo and close button, the height of the
-         modal's top padding, so the answer passes under it rather than
-         through it. */
-      #ai-search-overlay.as-panel.is-answered .modal-head::before {
-        display: block;
-        height: 56px;
-        background: var(--lw-ai-page-bg, var(--lw-ask-modal-bg, #f4f4f4));
-      }
+    /* ── Answer view, phones and the side panel ──
+       Once there is an answer, there is no room to keep the title and
+       subtitle on screen as well. The panel scrolls as one page instead:
+       they go up with the answer (_scrollToSearch carries the view there
+       when it arrives), and only the search field stays, held just under
+       the logo and close button. */
+    #ai-search-overlay.as-panel #ai-search-modal.post-commit {
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+    /* The hero steps out of the way so the field can stick to the
+       modal -- a sticky box cannot leave its own parent, and the
+       hero ends right under the field. */
+    #ai-search-overlay.as-panel #ai-search-modal.post-commit .hero {
+      display: contents;
+    }
+    #ai-search-overlay.as-panel #ai-search-modal.post-commit .hero h1 {
+      padding: 18px 16px 0;
+    }
+    #ai-search-overlay.as-panel #ai-search-modal.post-commit .hero > p {
+      padding: 0 16px;
+    }
+    #ai-search-overlay.as-panel #ai-search-modal.post-commit .search-bar {
+      position: sticky;
+      /* measured inside the modal's top padding, so 0 lands it right
+         under the logo row */
+      top: 0;
+      z-index: 1;
+      padding: 6px 16px 10px;
+      background: var(--lw-ai-page-bg, var(--lw-ask-modal-bg, #f4f4f4));
+    }
+    /* Further Reading tiles: room between the image and the author row
+       under it, and a title that holds its own beside the image. */
+    #ai-search-overlay.as-panel .modal-results {
+      --pl-image-margin-bottom-mobile: 10px;
+      --pl-title-font-size-mobile: 15px;
+    }
+    #ai-search-overlay.as-panel #ai-search-modal.post-commit .modal-results,
+    #ai-search-overlay.as-panel #ai-search-modal.post-commit .modal-loader {
+      flex: none;
+      overflow: visible;
+    }
+    /* A solid band behind the logo and close button, the height of the
+       modal's top padding, so the answer passes under it rather than
+       through it. */
+    #ai-search-overlay.as-panel.is-answered .modal-head::before {
+      display: block;
+      height: 56px;
+      background: var(--lw-ai-page-bg, var(--lw-ask-modal-bg, #f4f4f4));
     }
 
     #ai-search-modal {
@@ -1824,6 +1863,21 @@ export class LwAiSearch extends LitElement {
       color: var(--lw-ai-search-placeholder, #9aa1a8);
     }
 
+    /* Characters left, beside the clear button; amber near the limit, red at it. */
+    .char-count {
+      flex: none;
+      min-width: 3ch;
+      margin-left: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+      color: var(--lw-ai-search-placeholder, #9aa1a8);
+    }
+    .char-count.is-low { color: #e8890c; }
+    .char-count.is-full { color: #d93025; }
+    .char-count.is-hidden { visibility: hidden; }
+
     .clear-btn {
       border: none;
       background: none;
@@ -1834,6 +1888,66 @@ export class LwAiSearch extends LitElement {
     }
     .clear-btn svg { width: 16px; height: 16px; opacity: 0.55; }
     .clear-btn.is-hidden { visibility: hidden; pointer-events: none; }
+
+    /* ── Multi-line card ──
+       When the question wraps, the pill opens into a rounded card: the
+       text across the top, and under it "Clear" on the left with the
+       character count and a round search button on the right. */
+    .clear-text,
+    .go-btn { display: none; }
+
+    .search-input-wrapper.is-multi {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      grid-template-areas:
+        "text  text  text"
+        "clear count go";
+      align-items: center;
+      column-gap: 10px;
+      min-height: 0;
+      padding: 14px 16px 12px 20px;
+      border-radius: 22px;
+    }
+    .search-input-wrapper.is-multi > svg,
+    .search-input-wrapper.is-multi .clear-btn { display: none; }
+    .search-input-wrapper.is-multi textarea {
+      grid-area: text;
+      padding: 0 0 10px;
+      max-height: calc(var(--lw-field-line) * 4 + 10px);
+    }
+    .search-input-wrapper.is-multi .char-count { grid-area: count; }
+    .search-input-wrapper.is-multi .clear-text {
+      grid-area: clear;
+      display: block;
+      justify-self: start;
+      padding: 6px 0;
+      border: none;
+      background: none;
+      font: inherit;
+      font-size: 14px;
+      color: var(--lw-ai-search-placeholder, #8a94a6);
+      cursor: pointer;
+    }
+    .search-input-wrapper.is-multi .clear-text:hover { color: var(--lw-ai-search-color, #0f172a); }
+    .search-input-wrapper.is-multi .go-btn {
+      grid-area: go;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(128, 128, 128, 0.16);
+      color: #6b7280;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .search-input-wrapper.is-multi .go-btn:hover {
+      background: var(--lw-ai-button-bg, var(--lw-ask-accent, #1A1A1A));
+      color: var(--lw-ai-button-color, #ffffff);
+    }
+    .search-input-wrapper.is-multi .go-btn svg { width: 18px; height: 18px; opacity: 1; }
 
     /* ── Suggested queries — chips built from the questions attribute ──
        The row wraps inside the hero's 960px, so however many questions
@@ -2085,7 +2199,10 @@ export class LwAiSearch extends LitElement {
       margin-bottom: 4px;
       /* the list below sets its own via container-background */
       --pl-container-background: transparent;
+      /* "AI Answer" is the same size as "Further Reading" below it */
+      --lw-overview-heading-size: 24px;
     }
+    #ai-search-overlay.as-panel .modal-overview { --lw-overview-heading-size: 15px; }
 
     .further-reading {
       margin: 26px 0 12px;
@@ -2579,6 +2696,12 @@ export class LwAiSearch extends LitElement {
     this._syncBarSpace();
     this._syncChipRows();
     if (this.modalOpen) this._autoSizeInput();
+    // The answer has just landed: bring the search box to the top of the
+    // panel, so the reader starts at the question and its answer.
+    if (changedProperties.has('_resultsReady') && this._resultsReady
+        && this._postCommit && this._isPanel) {
+      this._scrollToSearch();
+    }
     if (changedProperties.has('theme')) {
       Promise.all(themeFontFamilies(this._resolvedTheme).map(loadGoogleFont));
     }
@@ -3381,6 +3504,18 @@ export class LwAiSearch extends LitElement {
     // scrollHeight only ever reports the height set last time.
     el.style.height = 'auto';
     el.style.height = el.scrollHeight + 'px';
+    // Once the question wraps, the field opens into the taller card (text
+    // on top, Clear and the search button underneath). It stays that way
+    // until emptied: measuring again at the card's wider width would
+    // otherwise flip it straight back and forth around the wrap point.
+    if (!el.value) {
+      if (this._multiline) this._multiline = false;
+    } else if (!this._multiline) {
+      const cs = getComputedStyle(el);
+      const line = parseFloat(cs.lineHeight) || 22;
+      const pads = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+      if (el.scrollHeight - pads > line * 1.5) this._multiline = true;
+    }
     // max-height caps the growth; past that the text scrolls instead.
     el.style.overflowY = el.scrollHeight > el.clientHeight ? 'auto' : 'hidden';
   }
@@ -3453,6 +3588,28 @@ export class LwAiSearch extends LitElement {
       this._searchCommitted = false;
       this._commitSearch();
     });
+  }
+
+  /**
+   * Scroll the panel so the search box sits at the top, just under the
+   * logo row, with the answer following it. The title and subtitle above
+   * it scroll out of view. Panel and phone only -- the full page keeps its
+   * own scrolling.
+   */
+  async _scrollToSearch() {
+    const modal = this.shadowRoot?.querySelector('#ai-search-modal');
+    const bar = modal?.querySelector('.search-bar');
+    if (!modal || !bar) return;
+    // The answer is drawn by child components, a render behind this one.
+    // Scrolling before they have laid out leaves the panel too short to
+    // scroll anywhere, so wait for them and for a frame.
+    const kids = modal.querySelectorAll('lw-blog-overview, lw-blog-list');
+    await Promise.all([...kids].map(el => el.updateComplete));
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    const pad = parseFloat(getComputedStyle(modal).paddingTop) || 0;
+    const delta = bar.getBoundingClientRect().top
+      - (modal.getBoundingClientRect().top + pad);
+    if (delta > 1) modal.scrollTo({ top: modal.scrollTop + delta, behavior: 'smooth' });
   }
 
   _commitSearch() {
@@ -4058,7 +4215,7 @@ export class LwAiSearch extends LitElement {
             <p>${this._resolvedTheme.text.subtitle.text}</p>
 
             <div class="search-bar">
-              <div class="search-input-wrapper">
+              <div class="search-input-wrapper ${this._multiline ? 'is-multi' : ''}">
                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M10.5 18.5c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8Z"
                         stroke="currentColor" stroke-width="2" opacity="0.8"/>
@@ -4066,17 +4223,36 @@ export class LwAiSearch extends LitElement {
                         stroke-linecap="round" opacity="0.8"/>
                 </svg>
                 <textarea id="searchInput" rows="1" autocomplete="off"
+                          maxlength=${LwAiSearch.maxQueryLength}
                           enterkeyhint="search" spellcheck="false"
                           placeholder=${this._resolvedTheme.text.search.placeholder || this.searchPlaceholder}
                           .value=${this._inputValue}
                           @input=${this._onModalInput}
                           @keydown=${this._onModalKeydown}></textarea>
+                ${(() => {
+                  const left = LwAiSearch.maxQueryLength - (this._inputValue ?? '').length;
+                  const state = left <= 0 ? 'is-full' : left <= 20 ? 'is-low' : '';
+                  return html`
+                    <span class="char-count ${this._inputValue ? '' : 'is-hidden'} ${state}"
+                          role="status"
+                          title="${left} characters remaining"
+                          aria-label="${left} characters remaining">${left}</span>`;
+                })()}
                 <button class="clear-btn ${this._inputValue ? '' : 'is-hidden'}"
                         aria-label="Clear search"
                         @click=${this._onModalClear}>
                   <svg viewBox="0 0 24 24">
                     <path d="M19,19,5,5M19,5,5,19" fill="none" stroke="black"
                           stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+                  </svg>
+                </button>
+                <button class="clear-text" @click=${this._onModalClear}>Clear</button>
+                <button class="go-btn" aria-label="Search" @click=${() => this._commitSearch()}>
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M10.5 18.5c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8Z"
+                          stroke="currentColor" stroke-width="2"/>
+                    <path d="M16.5 16.5 21 21" stroke="currentColor" stroke-width="2"
+                          stroke-linecap="round"/>
                   </svg>
                 </button>
               </div>
@@ -4342,6 +4518,7 @@ export class LwAiSearch extends LitElement {
           <form class="bar-form" @submit=${this._onBarSubmit}>
             ${LwAiSearch.searchIcon}
             <input type="text"
+                   maxlength=${LwAiSearch.maxQueryLength}
                    autocomplete="off"
                    placeholder=${this.barPlaceholder}
                    aria-label=${this.barPlaceholder} />

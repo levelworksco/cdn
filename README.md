@@ -1,5 +1,15 @@
 # lw-web-components
 
+## CDN link
+```
+https://cdn.jsdelivr.net/gh/levelworksco/cdn@main/lw-ai-search/lw-ai-search.js
+```
+
+## CDN purge link
+```
+https://purge.jsdelivr.net/gh/levelworksco/cdn@main/lw-ai-search/lw-ai-search.js
+```
+
 A collection of Lit-based web components for the Levelworks blog platform. Built with [Lit](https://lit.dev/) via CDN — no build step required.
 
 ---

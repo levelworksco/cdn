@@ -154,7 +154,7 @@ export class LwBlogOverview extends LitElement {
     }
 
     h1 {
-      font-size: 24px;
+      font-size: var(--lw-overview-heading-size, 24px);
       font-weight: 700;
       font-family: var(--lw-ai-results-heading-font, inherit);
       color: var(--lw-ai-results-heading-color, #1a1a1a);
@@ -173,7 +173,7 @@ export class LwBlogOverview extends LitElement {
 
     /* Matches the blog detail page's Body text (lw-blog-details.js .pd-body). */
     p {
-          font-size: var(--pl-excerpt-font-size, 13px);
+          font-size: 16px;
     color: var(--pl-excerpt-color, #9aa1a8);
     line-height: 1.55;
     margin-bottom: 1.1rem;
@@ -276,14 +276,14 @@ export class LwBlogOverview extends LitElement {
 
     @media (max-width: 768px) {
       .container { padding: 0 0 32px; }
-      h1 { font-size: 14px; }
-      p  { font-size: 13.5px; }
+      h1 { font-size: var(--lw-overview-heading-size, 14px); }
+      p  { font-size: 16px; }
       .citation { font-size: 11px; padding: 1px 7px; }
     }
     @media (max-width: 480px) {
       .container { padding: 0 0 28px; }
-      h1 { font-size: 13.5px; margin-bottom: 8px; }
-      p  { font-size: 13px; line-height: 1.6; margin-bottom: 14px; }
+      h1 { font-size: var(--lw-overview-heading-size, 13.5px); margin-bottom: 8px; }
+      p  { font-size: 16px; line-height: 1.6; margin-bottom: 14px; }
       .citation { font-size: 10.5px; padding: 1px 6px; }
     }
   `;

@@ -167,8 +167,10 @@ export class LwBlogOverview extends LitElement {
       width: 24px;
       height: 24px;
       margin-left: 6px;
-      vertical-align: super;
-      color: var(--lw-ai-sparkle-color, #F58635);
+      vertical-align: middle;
+      position: relative;
+      top: -2px;
+      color: var(--lw-ai-sparkle-color, currentColor);
     }
 
     /* Matches the blog detail page's Body text (lw-blog-details.js .pd-body). */

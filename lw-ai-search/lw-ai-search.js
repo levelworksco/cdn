@@ -513,7 +513,10 @@ export class LwAiSearch extends LitElement {
   // The fixed state shows this many; the scrolling one shows them all.
   static barFixedQuestions = 4;
   // Longest question either search field accepts; longer pastes are cut.
-  static maxQueryLength = 150;
+  static maxQueryLength = 500;
+  // The remaining-characters count only appears this close to the limit
+  // (as a share of it), so it is not ticking on every keystroke.
+  static countdownShare = 0.1;
 
   // Search-page cards are large, so only the first four fit the row. Chips
   // wrap freely, so they take everything the backend sends, up to 40 --
@@ -593,6 +596,8 @@ export class LwAiSearch extends LitElement {
     _showResults: { state: true },
     _resultsReady: { state: true },
     _multiline: { state: true },
+    _limitHit: { state: true },
+    _barLimitHit: { state: true },
     _postCommit: { state: true },
     _feedbackOpen: { state: true },
     _results: { state: true },
@@ -1000,6 +1005,23 @@ export class LwAiSearch extends LitElement {
       border: 1px solid var(--lw-ask-bar-divider, rgba(17, 17, 17, 0.12));
       border-radius: 999px;
       background: var(--lw-ask-bar-search-bg, #ffffff);
+    }
+    .bar-form { position: relative; }
+    .bar-form.is-limit { border-color: #b3261e; }
+    /* The cut-off notice floats just above the field, so the bar does not
+       change height when it appears. */
+    .bar-limit {
+      position: absolute;
+      left: 14px;
+      bottom: calc(100% + 6px);
+      padding: 3px 9px;
+      border-radius: 6px;
+      background: #b3261e;
+      color: #fff;
+      font-size: 11.5px;
+      line-height: 1.3;
+      white-space: nowrap;
+      pointer-events: none;
     }
     .bar-form:focus-within {
       border-color: var(--lw-ai-button-bg, var(--lw-ask-accent, #1A1A1A));
@@ -1614,15 +1636,15 @@ export class LwAiSearch extends LitElement {
 
     #ai-search-close {
       position: absolute;
-      top: 16px;
-      right: 20px;
+      top: 10px;
+      right: 12px;
       background: none;
       border: none;
-      font-size: 40px;
+      font-size: 28px;
       color: var(--lw-ai-close-color, #aaa);
       cursor: pointer;
       line-height: 1;
-      padding: 4px 8px;
+      padding: 2px 6px;
     }
     #ai-search-close:hover { color: #333; }
 
@@ -1638,8 +1660,8 @@ export class LwAiSearch extends LitElement {
        close button beside it is left alone for the same reason. */
     #ai-search-display {
       position: absolute;
-      top: 20px;
-      right: 66px;
+      top: 12px;
+      right: 52px;
       display: inline-flex;
       gap: 2px;
       padding: 3px;
@@ -1799,7 +1821,19 @@ export class LwAiSearch extends LitElement {
       display: flex;
       justify-content: center;
       align-items: center;
+      /* the field, with the limit warning (when there is one) under it */
+      flex-direction: column;
       width: 100%;
+    }
+
+    .limit-warning {
+      width: 100%;
+      max-width: 520px;
+      margin: 8px auto 0;
+      padding: 0 16px;
+      font-size: 12.5px;
+      line-height: 1.4;
+      color: #b3261e;
     }
 
     .search-input-wrapper {
@@ -1925,10 +1959,10 @@ export class LwAiSearch extends LitElement {
       background: none;
       font: inherit;
       font-size: 14px;
-      color: var(--lw-ai-search-placeholder, #8a94a6);
+      color: #8a8a8a;
       cursor: pointer;
     }
-    .search-input-wrapper.is-multi .clear-text:hover { color: var(--lw-ai-search-color, #0f172a); }
+    .search-input-wrapper.is-multi .clear-text:hover { color: #555; }
     .search-input-wrapper.is-multi .go-btn {
       grid-area: go;
       display: flex;
@@ -2298,7 +2332,7 @@ export class LwAiSearch extends LitElement {
       .suggested-chip { padding: 7px 13px; font-size: 12.5px; }
       .search-input-wrapper { max-width: 700px; }
       .modal-results { max-width: 1000px; }
-      #ai-search-close { top: 10px; right: 14px; font-size: 32px; }
+      #ai-search-close { top: 6px; right: 10px; font-size: 26px; }
     }
 
     /* ── Responsive ── */
@@ -2995,6 +3029,10 @@ export class LwAiSearch extends LitElement {
     }));
   };
 
+  _onBarInput = (e) => {
+    this._barLimitHit = this._clampQuery(e.target, this._barLimitHit);
+  };
+
   _onBarSubmit = (e) => {
     e.preventDefault();
     const input = this.shadowRoot?.querySelector('.bar-form input');
@@ -3520,12 +3558,31 @@ export class LwAiSearch extends LitElement {
     el.style.overflowY = el.scrollHeight > el.clientHeight ? 'auto' : 'hidden';
   }
 
+  /**
+   * Hold a field to maxQueryLength -- by hand, not with the maxlength
+   * attribute, which drops the extra text without a word and leaves it
+   * looking like the keyboard broke. Returns whether the limit warning
+   * should be showing: true once text has actually been cut off, and it
+   * stays up until the text is back under the limit.
+   */
+  _clampQuery(el, wasHit = false) {
+    const max = LwAiSearch.maxQueryLength;
+    if (el.value.length > max) {
+      const caret = Math.min(el.selectionStart ?? max, max);
+      el.value = el.value.slice(0, max);
+      el.setSelectionRange?.(caret, caret);
+      return true;
+    }
+    return el.value.length < max ? false : wasHit;
+  }
+
   _onModalInput(e) {
     // Pasted text can carry newlines, which a one-line field has no way
     // to show; they become spaces rather than hidden lines.
     if (e.target.value.includes('\n')) {
       e.target.value = e.target.value.replace(/\s*\n+\s*/g, ' ');
     }
+    this._limitHit = this._clampQuery(e.target, this._limitHit);
     const value = e.target.value;
     this._inputValue = value;
     this._autoSizeInput();
@@ -3552,6 +3609,7 @@ export class LwAiSearch extends LitElement {
 
   _onModalClear() {
     this._inputValue = '';
+    this._limitHit = false;
     this._currentQuery = '';
     // Back to the opening screen, so the question cards are reachable again.
     this._searchCommitted = false;
@@ -4223,17 +4281,20 @@ export class LwAiSearch extends LitElement {
                         stroke-linecap="round" opacity="0.8"/>
                 </svg>
                 <textarea id="searchInput" rows="1" autocomplete="off"
-                          maxlength=${LwAiSearch.maxQueryLength}
+                          aria-describedby="limitWarning"
                           enterkeyhint="search" spellcheck="false"
                           placeholder=${this._resolvedTheme.text.search.placeholder || this.searchPlaceholder}
                           .value=${this._inputValue}
                           @input=${this._onModalInput}
                           @keydown=${this._onModalKeydown}></textarea>
                 ${(() => {
-                  const left = LwAiSearch.maxQueryLength - (this._inputValue ?? '').length;
+                  const max = LwAiSearch.maxQueryLength;
+                  const left = max - (this._inputValue ?? '').length;
+                  // Quiet until the last tenth of the limit.
+                  const near = left <= Math.ceil(max * LwAiSearch.countdownShare);
                   const state = left <= 0 ? 'is-full' : left <= 20 ? 'is-low' : '';
                   return html`
-                    <span class="char-count ${this._inputValue ? '' : 'is-hidden'} ${state}"
+                    <span class="char-count ${near && this._inputValue ? '' : 'is-hidden'} ${state}"
                           role="status"
                           title="${left} characters remaining"
                           aria-label="${left} characters remaining">${left}</span>`;
@@ -4256,6 +4317,11 @@ export class LwAiSearch extends LitElement {
                   </svg>
                 </button>
               </div>
+              ${this._limitHit ? html`
+                <p class="limit-warning" id="limitWarning" role="alert">
+                  Limit of ${LwAiSearch.maxQueryLength} characters reached &mdash;
+                  the rest of your text was cut off.
+                </p>` : ''}
             </div>
 
             ${this._renderModalSuggestions(questions, suggestedStyle)}
@@ -4515,13 +4581,18 @@ export class LwAiSearch extends LitElement {
     if (mode === 'search') {
       return html`
         <div class="bar-body">
-          <form class="bar-form" @submit=${this._onBarSubmit}>
+          <form class="bar-form ${this._barLimitHit ? 'is-limit' : ''}" @submit=${this._onBarSubmit}>
             ${LwAiSearch.searchIcon}
             <input type="text"
-                   maxlength=${LwAiSearch.maxQueryLength}
                    autocomplete="off"
                    placeholder=${this.barPlaceholder}
-                   aria-label=${this.barPlaceholder} />
+                   aria-label=${this.barPlaceholder}
+                   aria-describedby="barLimitWarning"
+                   @input=${this._onBarInput} />
+            ${this._barLimitHit ? html`
+              <span class="bar-limit" id="barLimitWarning" role="alert">
+                ${LwAiSearch.maxQueryLength}-character limit &mdash; text was cut off
+              </span>` : ''}
           </form>
         </div>`;
     }

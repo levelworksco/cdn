@@ -514,6 +514,8 @@ export class LwAiSearch extends LitElement {
   static barFixedQuestions = 4;
   // Longest question either search field accepts; longer pastes are cut.
   static maxQueryLength = 500;
+  // Longest the launcher waits for the settings before showing the defaults.
+  static themeWaitMs = 4000;
   // The remaining-characters count only appears this close to the limit
   // (as a share of it), so it is not ticking on every keystroke.
   static countdownShare = 0.1;
@@ -614,6 +616,7 @@ export class LwAiSearch extends LitElement {
     // endpoint (see _fetchSummary / _mapAnswerToParagraphs).
     _summaryParagraphs: { state: true },
     _backendTheme: { state: true },
+    _themeSettled: { state: true },
     _backendQuestions: { state: true },
     // Widget Styling Config › citationsStyle from the same backend config
     // response — see _resolvedCitations.
@@ -649,6 +652,9 @@ export class LwAiSearch extends LitElement {
     }
 
     .ai-search-launcher { display: contents; }
+    /* Held back until the configured theme has arrived. Hidden, not
+       removed, so it keeps its place and nothing jumps when it appears. */
+    .ai-search-launcher.is-theme-pending { visibility: hidden; }
 
     /* ── Expanding panel ── */
     .panel {
@@ -1007,7 +1013,7 @@ export class LwAiSearch extends LitElement {
       background: var(--lw-ask-bar-search-bg, #ffffff);
     }
     .bar-form { position: relative; }
-    .bar-form.is-limit { border-color: #b3261e; }
+    .bar-form.is-limit { border-color: #d93025; }
     /* The cut-off notice floats just above the field, so the bar does not
        change height when it appears. */
     .bar-limit {
@@ -1016,7 +1022,7 @@ export class LwAiSearch extends LitElement {
       bottom: calc(100% + 6px);
       padding: 3px 9px;
       border-radius: 6px;
-      background: #b3261e;
+      background: #d93025;
       color: #fff;
       font-size: 11.5px;
       line-height: 1.3;
@@ -1833,7 +1839,7 @@ export class LwAiSearch extends LitElement {
       padding: 0 16px;
       font-size: 12.5px;
       line-height: 1.4;
-      color: #b3261e;
+      color: #d93025;
     }
 
     .search-input-wrapper {
@@ -1949,12 +1955,13 @@ export class LwAiSearch extends LitElement {
       padding: 0 0 10px;
       max-height: calc(var(--lw-field-line) * 4 + 10px);
     }
-    .search-input-wrapper.is-multi .char-count { grid-area: count; }
+    .search-input-wrapper.is-multi .char-count { grid-area: count; align-self: end; padding-bottom: 2px; }
     .search-input-wrapper.is-multi .clear-text {
       grid-area: clear;
       display: block;
       justify-self: start;
-      padding: 6px 0;
+      align-self: end;
+      padding: 0 0 2px;
       border: none;
       background: none;
       font: inherit;
@@ -2480,6 +2487,10 @@ export class LwAiSearch extends LitElement {
     this.searchPlaceholder = 'Ask a question to get instant AI answer';
     this.theme = {};
     this._backendTheme = {};
+    // False until the settings request has answered (or failed, or timed
+    // out), so the launcher is not drawn in the default theme first only
+    // to change shape and colour a moment later.
+    this._themeSettled = false;
     this._backendQuestions = [];
     this._backendCitationsStyle = null;
     this.promptType = null;
@@ -2695,6 +2706,9 @@ export class LwAiSearch extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     Promise.all(themeFontFamilies(this._resolvedTheme).map(loadGoogleFont));
+    // A slow or dead settings request must not leave the widget invisible.
+    clearTimeout(this._themeTimer);
+    this._themeTimer = setTimeout(() => { this._themeSettled = true; }, LwAiSearch.themeWaitMs);
     this.addEventListener('mouseenter', this._onEnter);
     this.addEventListener('mouseleave', this._onLeave);
     this.addEventListener('focusin', this._onEnter);
@@ -2872,6 +2886,7 @@ export class LwAiSearch extends LitElement {
       this._backendTheme = {};
       this._backendCitationsStyle = null;
       this.promptType = null;
+      this._themeSettled = true;
       return null;
     }
 
@@ -2928,6 +2943,7 @@ export class LwAiSearch extends LitElement {
       this._backendTheme = nextBackendTheme;
       this._backendCitationsStyle = nextCitationsStyle;
       this.promptType = nextPromptType;
+      this._themeSettled = true;
       this.dispatchEvent(new CustomEvent('lw-ai-theme-loaded', {
         detail: { index: this.searchIndex, theme: this._backendTheme },
         bubbles: true,
@@ -2940,6 +2956,7 @@ export class LwAiSearch extends LitElement {
       this._backendTheme = {};
       this._backendCitationsStyle = null;
       this.promptType = null;
+      this._themeSettled = true;
       this.dispatchEvent(new CustomEvent('lw-ai-theme-error', {
         detail: {
           index: this.searchIndex,
@@ -3208,15 +3225,14 @@ export class LwAiSearch extends LitElement {
     const wrap = this.shadowRoot?.querySelector('.bar-wrap');
     const inBar = this._isBar && !this._inline && !!wrap;
     const bar = this.shadowRoot?.querySelector('.bar');
-    const tab = this.shadowRoot?.querySelector('.bar-toggle');
     const visible = el => el && el.getBoundingClientRect().height > 0;
 
-    // Minimized, the strip is display:none and only the tab shows, so the
-    // reserved height follows whichever is on screen. While the search is
-    // open both are hidden and the height is zero.
+    // Only the strip itself is reserved. Minimized, just the small tab is
+    // left, floating over the page's corner like a button; reserving its
+    // height as well left a blank band under the footer. While the search
+    // is open the strip is hidden and the height is zero.
     const height = !inBar ? 0 : Math.ceil(
-      visible(bar) ? bar.getBoundingClientRect().height
-        : (visible(tab) ? tab.getBoundingClientRect().height : 0));
+      visible(bar) ? bar.getBoundingClientRect().height : 0);
 
     if (!height) {
       // Nothing is on screen to clear, so the page gets its own padding
@@ -4141,7 +4157,8 @@ export class LwAiSearch extends LitElement {
 
   render() {
     return html`
-      <div class="ai-search-launcher" style=${this._themeStyle}>
+      <div class="ai-search-launcher ${this._themeSettled ? '' : 'is-theme-pending'}"
+           style=${this._themeStyle}>
         ${this._inline
         ? this._renderInlineButton()
         : this._isBar
@@ -4319,8 +4336,8 @@ export class LwAiSearch extends LitElement {
               </div>
               ${this._limitHit ? html`
                 <p class="limit-warning" id="limitWarning" role="alert">
-                  Limit of ${LwAiSearch.maxQueryLength} characters reached &mdash;
-                  the rest of your text was cut off.
+                  A maximum of ${LwAiSearch.maxQueryLength} characters may be used.
+                  That limit has been reached.
                 </p>` : ''}
             </div>
 
@@ -4591,7 +4608,7 @@ export class LwAiSearch extends LitElement {
                    @input=${this._onBarInput} />
             ${this._barLimitHit ? html`
               <span class="bar-limit" id="barLimitWarning" role="alert">
-                ${LwAiSearch.maxQueryLength}-character limit &mdash; text was cut off
+                A maximum of ${LwAiSearch.maxQueryLength} characters may be used. That limit has been reached.
               </span>` : ''}
           </form>
         </div>`;

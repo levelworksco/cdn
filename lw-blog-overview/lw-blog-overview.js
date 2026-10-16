@@ -132,6 +132,9 @@ export class LwBlogOverview extends LitElement {
     heading:          { type: String },
     paragraphs:       { type: Array  },
     displayCitations: { type: String, attribute: 'display-citations' }, // 'none' | 'number' | 'chip' | 'link'
+    // Reveal the answer as if it were being typed, then show the citations.
+    typewriter:       { type: Boolean },
+    _typed:           { state: true },   // characters revealed so far
   };
 
   static styles = css`
@@ -184,6 +187,18 @@ export class LwBlogOverview extends LitElement {
     p:last-of-type { margin-bottom: 0; }
 
     /* ── chip mode (default) ── */
+    /* The caret that rides at the end of the text while it is typed. */
+    .caret {
+      display: inline-block;
+      width: 2px;
+      height: 1em;
+      margin-left: 2px;
+      background: currentColor;
+      vertical-align: text-bottom;
+      animation: lw-caret-blink 0.9s steps(1) infinite;
+    }
+    @keyframes lw-caret-blink { 50% { opacity: 0; } }
+
     .citation {
       display: inline-flex;
       align-items: center;
@@ -296,6 +311,10 @@ export class LwBlogOverview extends LitElement {
     this.paragraphs       = [];
     this.displayCitations = 'chip';
     this._cards           = [];
+    this.typewriter       = false;
+    this._typed           = Infinity;   // everything, until a typing run starts
+    this._typedSignature  = '';
+    this._typingFrame     = 0;
   }
 
   connectedCallback() {
@@ -306,10 +325,55 @@ export class LwBlogOverview extends LitElement {
   disconnectedCallback() {
     super.disconnectedCallback();
     this._teardownCards();
+    cancelAnimationFrame(this._typingFrame);
+  }
+
+  get _totalChars() {
+    return (this.paragraphs ?? []).reduce((n, para) => n + String(para.text ?? '').length, 0);
+  }
+
+  willUpdate(changedProps) {
+    if (!changedProps.has('paragraphs') && !changedProps.has('typewriter')) return;
+
+    if (!this.typewriter) {
+      cancelAnimationFrame(this._typingFrame);
+      this._typed = Infinity;
+      this._typedSignature = '';
+      return;
+    }
+
+    // A new array with the same words (the parent re-rendering) must not
+    // start the typing over; only a different answer does.
+    const signature = (this.paragraphs ?? []).map(para => para.text).join('||');
+    if (signature === this._typedSignature) return;
+    this._typedSignature = signature;
+    this._startTyping();
+  }
+
+  _startTyping() {
+    cancelAnimationFrame(this._typingFrame);
+    const total = this._totalChars;
+    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (!total || reduced) { this._typed = Infinity; return; }
+
+    this._typed = 0;
+    // Brisk, but never longer than about five seconds for a long answer.
+    const perSecond = Math.max(90, total / 5);
+    const start = performance.now();
+    const tick = (now) => {
+      const typed = Math.floor(((now - start) / 1000) * perSecond);
+      if (typed >= total) { this._typed = Infinity; return; }
+      this._typed = typed;
+      this._typingFrame = requestAnimationFrame(tick);
+    };
+    this._typingFrame = requestAnimationFrame(tick);
   }
 
   updated(changedProps) {
-    if (changedProps.has('paragraphs') || changedProps.has('displayCitations')) {
+    // The citations only exist once the typing has finished.
+    const finishedTyping = changedProps.has('_typed') && this._typed === Infinity
+      && changedProps.get('_typed') !== Infinity;
+    if (changedProps.has('paragraphs') || changedProps.has('displayCitations') || finishedTyping) {
       this._teardownCards();
       const mode = this.displayCitations ?? 'chip';
       if (mode === 'chip') {
@@ -493,9 +557,19 @@ export class LwBlogOverview extends LitElement {
           <path d="M18 14l.9 2.1L21 17l-2.1.9L18 20l-.9-2.1L15 17l2.1-.9L18 14z"/>
         </svg></h1>
         <div class="paragraphs">
-          ${this.paragraphs.map(para => html`
-            <p>${para.text}${this._renderCitation(para.citation, mode, articleIndex)}</p>
-          `)}
+          ${(() => {
+            let left = this._typed;           // characters still to reveal
+            return this.paragraphs.map((para, i) => {
+              const text = String(para.text ?? '');
+              if (left <= 0 && i > 0) return nothing;   // not reached yet
+              const done = left >= text.length;
+              const shown = done ? text : text.slice(0, left);
+              left -= text.length;
+              return html`<p>${shown}${done
+                ? this._renderCitation(para.citation, mode, articleIndex)
+                : html`<span class="caret"></span>`}</p>`;
+            });
+          })()}
         </div>
         <div class="divider"></div>
       </div>

@@ -4355,6 +4355,7 @@ export class LwAiSearch extends LitElement {
                 heading=${this.overviewHeading}
                 display-citations=${this._resolvedCitations}
                 .paragraphs=${this._overview}
+                .typewriter=${true}
                 @citation-click=${this._onCitationClick}
               ></lw-blog-overview>
               <h3 class="further-reading">Further Reading</h3>` : ''}

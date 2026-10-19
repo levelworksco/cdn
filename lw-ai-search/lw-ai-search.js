@@ -1812,7 +1812,7 @@ export class LwAiSearch extends LitElement {
     }
 
     .hero > p {
-      margin-top: 6px;
+      margin-top: 14px;
       margin-bottom: 34px;
       max-width: 500px;
       margin-left: auto;
@@ -4145,7 +4145,10 @@ export class LwAiSearch extends LitElement {
 
   _onCta = (e) => {
     const ev = new CustomEvent('lw-ask-cta', {
-      detail: { label: this.ctaLabel, href: this.ctaHref },
+      detail: {
+        label: this._resolvedPosition === 'bar' ? this._barCtaLabel : this.ctaLabel,
+        href: this.ctaHref,
+      },
       bubbles: true,
       composed: true,
       cancelable: true,
@@ -4536,8 +4539,20 @@ export class LwAiSearch extends LitElement {
    * floating panel uses, so Widget › Questions and Widget › Button keep
    * styling them here exactly as they do there.
    */
+  /**
+   * Text on the bar's CTA pill. The bar has no launcher to carry the helper
+   * text, so the backend-configured Helper Text (Widget › Helper Text in the
+   * admin panel) labels the CTA instead — the same string the floating
+   * launcher shows. cta-label is the fallback when no helper text is set.
+   */
+  get _barCtaLabel() {
+    const helper = this._resolvedTheme.widget.helperText;
+    return (typeof helper === 'string' && helper.trim()) || this.ctaLabel;
+  }
+
   _renderBar() {
     const mode = this._activeBarMode;
+    const ctaLabel = this._barCtaLabel;
 
     const cta = this.ctaHref
       ? html`
@@ -4546,11 +4561,11 @@ export class LwAiSearch extends LitElement {
            target=${this.ctaTarget || '_self'}
            rel=${this.ctaTarget === '_blank' ? 'noreferrer noopener' : ''}
            @click=${this._onCta}>
-          ${LwAiSearch.sparkleIcon}${this.ctaLabel}
+          ${LwAiSearch.sparkleIcon}${ctaLabel}
         </a>`
       : html`
         <button class="pill cta" @click=${this._onCta}>
-          ${LwAiSearch.sparkleIcon}${this.ctaLabel}
+          ${LwAiSearch.sparkleIcon}${ctaLabel}
         </button>`;
 
     const modeButton = (value, icon, labelText) => html`

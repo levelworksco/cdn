@@ -210,6 +210,12 @@ function normalizeWidgetPosition(value) {
  */
 const CITATIONS_STYLES = new Set(['none', 'chip', 'number', 'link']);
 
+// /summary/stream only: the hits arrive first (~1s) but we hold the "Further
+// Reading" list back so it never appears before the AI Overview is fully on
+// screen. This is the cap — if the overview hasn't finished by now, show the
+// hits anyway rather than keep the user waiting. See _fetchSummaryStream.
+const STREAM_HITS_GATE_MS = 3000;
+
 function normalizeCitationsStyle(value) {
   const v = String(value ?? '').trim().toLowerCase();
   return CITATIONS_STYLES.has(v) ? v : null;
@@ -2571,6 +2577,13 @@ export class LwAiSearch extends LitElement {
     this._summaryText = '';
     this._summaryHits = [];
     this._summaryParagraphs = [];
+    // /summary/stream hits-reveal gate (see _fetchSummaryStream / _revealStreamHits).
+    this._streamSections = [];        // answer[]-shaped accumulator for the stream
+    this._streamHits = null;          // hits buffered from the stream, not yet shown
+    this._streamHitsShown = false;    // true once published to _results (the list)
+    this._streamGateElapsed = false;  // true once the STREAM_HITS_GATE_MS cap fires
+    this._streamGateTimer = null;
+    this._streamGateCtrl = null;      // the AbortController the gate belongs to
     // non-reactive search state
     this._page = 1;
     this._hasMore = true;
@@ -2733,7 +2746,9 @@ export class LwAiSearch extends LitElement {
     this._barSpaceObserver = null;
     this._releaseBarSpace();
     clearTimeout(this._debounceTimer);
+    clearTimeout(this._streamGateTimer);
     this._abortController?.abort();
+    this._summaryAbort?.abort();
     this._themeAbortController?.abort();
     super.disconnectedCallback();
   }
@@ -2747,7 +2762,7 @@ export class LwAiSearch extends LitElement {
     // The answer has just landed: bring the search box to the top of the
     // panel, so the reader starts at the question and its answer.
     if (changedProperties.has('_resultsReady') && this._resultsReady
-        && this._postCommit && this._isPanel) {
+      && this._postCommit && this._isPanel) {
       this._scrollToSearch();
     }
     if (changedProperties.has('theme')) {
@@ -3698,7 +3713,7 @@ export class LwAiSearch extends LitElement {
     this._loading = true;
     this._noResults = false;
     this._resultsReady = false;
-    this._fetchSummary(q);
+    this._fetchSummaryStream(q);
     this._currentQuery = q;
     this._searchCommitted = true;
     this._showFeatures = false;
@@ -3707,8 +3722,8 @@ export class LwAiSearch extends LitElement {
     // On a phone the keyboard would otherwise stay up over the answer.
     if (this._isPhone) this._input?.blur();
     // /api/v1/search/{index} disabled for now — every search runs through
-    // /summary only (see _fetchSummary above, which now supplies Further
-    // Reading too). /summary/stream is unused — see _fetchSummaryStream.
+    // /summary/stream, which streams the per-section overview and supplies
+    // Further Reading too. _fetchSummary is the non-streaming twin, kept unused.
     // this._fetchResults(q, 1);
   }
 
@@ -3792,6 +3807,10 @@ export class LwAiSearch extends LitElement {
     this._resultsReady = false;
     this._postCommit = false;
     clearTimeout(this._debounceTimer);
+    clearTimeout(this._streamGateTimer);
+    this._streamHitsShown = false;
+    this._streamGateElapsed = false;
+    this._streamHits = null;
     if (this._abortController) { this._abortController.abort(); this._abortController = null; }
     this._results = [];
     this._summaryText = '';
@@ -3805,6 +3824,10 @@ export class LwAiSearch extends LitElement {
     this._showFeatures = true;
   }
 
+  // UNUSED right now but DO NOT REMOVE — the non-streaming AI-overview path,
+  // kept so _commitSearch can switch back to it without writing any code: just
+  // flip its call from _fetchSummaryStream back to _fetchSummary.
+  //
   // ── Overview: POST {base}/api/v1/search/{index}/summary ─────────────
   // Non-streaming. Returns both the per-section overview (answer[]) and
   // the article hits used as citations, in one response.
@@ -3915,15 +3938,13 @@ export class LwAiSearch extends LitElement {
     return more > 0 ? `${displayTitle} +${more}` : displayTitle;
   }
 
-  // UNUSED right now but DO NOT REMOVE — the /summary/stream path. /summary
-  // (non-streaming, see _fetchSummary above) replaced this as the active
-  // call in _commitSearch() because it now returns part-level citations
-  // that /summary/stream does not. If streaming is reintroduced later,
-  // this is the starting point.
-  //
   // ── Overview: POST {base}/api/v1/search/{index}/summary/stream ──────
-  // Server-sent events; one call returns both the overview text and the
-  // article hits used as citations.
+  // The active AI-overview call (see _commitSearch). Streams Server-Sent
+  // Events: a fast `hits` frame (the Further Reading list + citation
+  // sources), then per section `section_start` → `token` → `citations` →
+  // `section_end`, then `response_end`. The hits list is held back by the
+  // reveal gate so "Further Reading" never appears before the overview is
+  // fully on screen (see _handleSseFrame / _revealStreamHits).
   get _summaryStreamUrl() {
     const base = (this.searchBase || '').replace(/\/+$/, '');
     const index = encodeURIComponent(this.searchIndex || 'all');
@@ -3936,6 +3957,24 @@ export class LwAiSearch extends LitElement {
     this._summaryAbort?.abort();
     const ctrl = new AbortController();
     this._summaryAbort = ctrl;
+
+    // Arm the hits-reveal gate for this stream. The `hits` frame buffers into
+    // _streamHits instead of painting the list; it's revealed only once the
+    // overview finishes (the finally block) or the cap fires — whichever
+    // comes first. Clearing _results hides the previous search's list while we
+    // wait. See _handleSseFrame / _revealStreamHits.
+    clearTimeout(this._streamGateTimer);
+    this._streamSections = [];
+    this._streamHits = null;
+    this._streamHitsShown = false;
+    this._streamGateElapsed = false;
+    this._streamGateCtrl = ctrl;
+    this._summaryParagraphs = [];
+    this._results = [];
+    this._streamGateTimer = setTimeout(() => {
+      this._streamGateElapsed = true;
+      this._revealStreamHits();
+    }, STREAM_HITS_GATE_MS);
 
     try {
       const res = await fetch(this._summaryStreamUrl, {
@@ -3951,6 +3990,7 @@ export class LwAiSearch extends LitElement {
           limit: LwAiSearch.pageLimit,
           semanticRatio: Number(this.semanticRatio),
           modelProvider: "vast",
+          allowVastFallback: true,
           // Forwarded as-is from the widget styling config, see refreshTheme.
           ...(this.promptType != null ? { promptType: this.promptType } : {}),
         }),
@@ -3976,31 +4016,68 @@ export class LwAiSearch extends LitElement {
     } catch (err) {
       if (err.name === 'AbortError') return;
       // The summary endpoint fails occasionally; leave whatever is
-      // already rendered rather than blanking the section.
+      // already rendered rather than blanking the section. If the `hits`
+      // frame already arrived, reveal those rather than show an error.
       console.error('<lw-ai-search> summary stream:', err);
-      // Only show the error state if the 'hits' event never even arrived —
-      // once results are showing, a later failure (e.g. the token stream
-      // dropping) shouldn't blank them out from under the user.
+      if (!this._streamHitsShown && Array.isArray(this._streamHits)) this._revealStreamHits();
       if (!this._resultsReady) {
         this._noResults = true;
         this._noResultsMsg = 'Something went wrong. Please try again.';
         this._resultsReady = true;
       }
       this._loading = false;
+    } finally {
+      // Guard against THIS request's own controller — a superseded stream
+      // (whose controller we already replaced) must not finalise over the
+      // new in-progress search.
+      if (this._summaryAbort === ctrl) {
+        // The overview is complete and now becomes visible. Open the results
+        // view and, once it has painted, reveal the gated hits — so "Further
+        // Reading" follows the overview rather than appearing alongside it.
+        // The 3s cap may have revealed them already.
+        this._loading = false;
+        this._resultsReady = true;
+        if (!this._streamHitsShown) {
+          this.updateComplete.then(() => {
+            if (this._summaryAbort === ctrl) this._revealStreamHits();
+          });
+        }
+      }
     }
   }
 
+  // Publishes the buffered stream hits to _results (which paints the "Further
+  // Reading" list) and opens the results view. No-op until the hits have
+  // arrived, if they're already shown, or if this stream was superseded.
+  _revealStreamHits() {
+    if (this._streamHitsShown || !Array.isArray(this._streamHits)) return;
+    if (this._summaryAbort !== this._streamGateCtrl) return;   // superseded
+    this._streamHitsShown = true;
+    clearTimeout(this._streamGateTimer);
+    this._summaryHits = this._streamHits;   // citation source
+    this._results = this._streamHits;        // the Further Reading list
+    this._hasMore = false;
+    this._noResults = this._results.length === 0;
+    this._noResultsMsg = 'No results found';
+    this._resultsReady = true;
+    this._loading = false;
+    this.dispatchEvent(new CustomEvent('lw-ask-results', {
+      detail: { query: this._currentQuery, page: 1, results: this._results, total: this._results.length },
+      bubbles: true,
+      composed: true,
+    }));
+  }
+
   /**
-   * UNUSED right now but DO NOT REMOVE — see _fetchSummaryStream. Only
-   * called from there.
+   * One SSE frame. The stream sends a fast `hits` frame (citation sources +
+   * the Further Reading list) followed, per overview section, by
+   * `section_start` → `token` (the whole section text) → `citations` →
+   * `section_end`, then `response_end`. `error` is an in-band failure that
+   * arrives after a 200 and so cannot be caught by res.ok.
    *
-   * One SSE frame. `hits` carries the citation articles and starts a new
-   * answer, `token` appends (never replaces), `error` is an in-band
-   * failure that arrives after a 200 and so cannot be caught by res.ok.
-   *
-   * `hits` is also the sole source for the "Further Reading" list now
-   * that /api/v1/search/ is disabled — it feeds `_results` directly,
-   * the same array <lw-blog-list> was reading from that endpoint.
+   * `hits` feeds the "Further Reading" list now that /api/v1/search/ is
+   * disabled, but it's buffered — the reveal gate holds the list back until
+   * the overview finishes or the 3s cap fires (see _revealStreamHits).
    */
   _handleSseFrame(frame) {
     const event = (frame.match(/^event:\s*(.*)$/m) || [])[1]?.trim();
@@ -4012,26 +4089,43 @@ export class LwAiSearch extends LitElement {
 
     switch (event) {
       case 'hits':
-        this._summaryHits = data?.hits ?? [];
-        this._results = this._summaryHits;
-        // One batch, no paging — see _onModalScroll.
-        this._hasMore = false;
-        this._resultsReady = true;
-        this._noResults = this._results.length === 0;
-        this._noResultsMsg = 'No results found';
-        this._loading = false;
+        // Citation source for the overview, and (once revealed) the Further
+        // Reading list. Buffered — the gate holds the list back until the
+        // overview finishes or the cap fires (see _revealStreamHits).
+        this._streamHits = Array.isArray(data?.hits) ? data.hits : [];
+        this._summaryHits = this._streamHits;
+        this._streamSections = [];
+        this._summaryParagraphs = [];
         this._summaryText = '';
-        this.dispatchEvent(new CustomEvent('lw-ask-results', {
-          detail: { query: this._currentQuery, page: 1, results: this._results, total: this._results.length },
-          bubbles: true,
-          composed: true,
-        }));
+        // If the cap already elapsed (hits slower than 3s), show immediately.
+        if (this._streamGateElapsed) this._revealStreamHits();
         break;
-      case 'token':
-        this._summaryText += data?.text ?? '';
+      case 'section_start':
+        // A new overview section (paragraph) begins.
+        this._streamSections.push({ text: '', citations: [] });
+        break;
+      case 'token': {
+        // The whole section's text arrives in one frame — append to the open
+        // section (not a global blob) so section boundaries are preserved.
+        const s = this._streamSections[this._streamSections.length - 1];
+        if (s) s.text += data?.text ?? '';
+        break;
+      }
+      case 'citations': {
+        // Per-section citations: 0-based indices into the hits array above.
+        const s = this._streamSections[this._streamSections.length - 1];
+        if (s) s.citations = Array.isArray(data?.citations) ? data.citations : [];
+        break;
+      }
+      case 'section_end':
+        // Section complete — re-map the accumulated answer through the SAME
+        // mapper the non-stream path uses, so citations render identically.
+        // Uses _streamHits (the gate may still be withholding the list).
+        this._summaryParagraphs = this._mapAnswerToParagraphs(this._streamSections, this._streamHits ?? this._summaryHits ?? []);
         break;
       case 'error':
         throw new Error(data?.message || 'summary stream error');
+      case 'response_end':
       case 'done':
       default:
         break;
@@ -4050,8 +4144,11 @@ export class LwAiSearch extends LitElement {
   }
 
   /**
-   * UNUSED right now but DO NOT REMOVE — see _fetchSummaryStream. Only
-   * called from _handleSseFrame's `token` event handling.
+   * UNUSED right now but DO NOT REMOVE — the pre-section streaming helper.
+   * The active stream path now builds answer[]-shaped sections in
+   * _handleSseFrame and maps them via _mapAnswerToParagraphs, so this
+   * heuristic splitter is no longer called; kept for a fallback to the old
+   * token-blob stream handling.
    *
    * Split the answer into paragraphs: blank lines when the model used
    * them, sentence boundaries otherwise — this API usually returns one
@@ -4088,6 +4185,10 @@ export class LwAiSearch extends LitElement {
     this._page = 1;
     this._hasMore = true;
     this._loading = false;
+    clearTimeout(this._streamGateTimer);
+    this._streamHitsShown = false;
+    this._streamGateElapsed = false;
+    this._streamHits = null;
     this._results = [];
     this._summaryText = '';
     this._summaryHits = [];
@@ -4308,17 +4409,17 @@ export class LwAiSearch extends LitElement {
                           @input=${this._onModalInput}
                           @keydown=${this._onModalKeydown}></textarea>
                 ${(() => {
-                  const max = LwAiSearch.maxQueryLength;
-                  const left = max - (this._inputValue ?? '').length;
-                  // Quiet until the last tenth of the limit.
-                  const near = left <= Math.ceil(max * LwAiSearch.countdownShare);
-                  const state = left <= 0 ? 'is-full' : left <= 20 ? 'is-low' : '';
-                  return html`
+        const max = LwAiSearch.maxQueryLength;
+        const left = max - (this._inputValue ?? '').length;
+        // Quiet until the last tenth of the limit.
+        const near = left <= Math.ceil(max * LwAiSearch.countdownShare);
+        const state = left <= 0 ? 'is-full' : left <= 20 ? 'is-low' : '';
+        return html`
                     <span class="char-count ${near && this._inputValue ? '' : 'is-hidden'} ${state}"
                           role="status"
                           title="${left} characters remaining"
                           aria-label="${left} characters remaining">${left}</span>`;
-                })()}
+      })()}
                 <button class="clear-btn ${this._inputValue ? '' : 'is-hidden'}"
                         aria-label="Clear search"
                         @click=${this._onModalClear}>
@@ -4739,8 +4840,8 @@ export class LwAiSearch extends LitElement {
     const helper = this._resolvedTheme.widget.helperText;
     // In "icon" mode the helper text is not rendered on the launcher at all.
     const inner = html`${LwAiSearch.searchIcon}${style === 'icon-text' && helper
-        ? html`<span class="fab-label">${helper}</span>`
-        : ''}`;
+      ? html`<span class="fab-label">${helper}</span>`
+      : ''}`;
     return html`
       ${this.href
         ? html`

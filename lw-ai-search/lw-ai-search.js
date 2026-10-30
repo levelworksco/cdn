@@ -504,6 +504,23 @@ function bindPopstate() {
   });
 }
 
+// Flattens an excerpt field to plain text. The backend is inconsistent — for
+// some clients (and even some docs within one client) `summary`/`body` is
+// plain text, for others it's an HTML fragment. Lit escapes text bindings, so
+// an HTML excerpt would otherwise render its tags as literal visible text
+// (e.g. "<p>Hello</p>"). We let the browser's own HTML parser (DOMParser) do
+// the work and keep only the text content, so every row shows clean text
+// regardless of which form the field took — this also decodes entities
+// (&amp; → &, &nbsp; → space). Parsing is inert: scripts don't run, and we
+// only read the text back out.
+function htmlToText(raw) {
+  const text = (raw ?? '').trim();
+  // Fast path: no '<' means there's nothing to strip, so skip the parse.
+  if (!text || !text.includes('<')) return text;
+  const doc = new DOMParser().parseFromString(text, 'text/html');
+  return (doc.body.textContent || '').replace(/\s+/g, ' ').trim();
+}
+
 export class LwAiSearch extends LitElement {
 
   // The panel holds four questions at most — any beyond that are ignored.
@@ -4597,7 +4614,9 @@ export class LwAiSearch extends LitElement {
     return {
       id: hit.id,
       title: hit.title ?? '',
-      excerpt: hit.summary ?? hit.body ?? '',
+      // Flatten to plain text — summary/body may arrive as HTML
+      // (see htmlToText), and we never want tags shown on the row.
+      excerpt: htmlToText(hit.summary ?? hit.body),
       image,
       author: hit.author?.name ?? hit.authorName ?? '',
       avatar: hit.author?.img ?? hit.authorImg ?? '',

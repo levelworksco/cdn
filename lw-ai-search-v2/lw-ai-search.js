@@ -4563,15 +4563,32 @@ export class LwAiSearch extends LitElement {
               <span class="metaHits">${this._metaHits}</span>
               <span class="metaTime">${this._metaTime}</span>
             </div>
-            ${this._overview.length ? html`
-              <lw-blog-overview
+
+            <lw-blog-overview
                 class="modal-overview"
                 heading=${this.overviewHeading}
                 display-citations=${this._resolvedCitations}
                 .paragraphs=${this._overview}
                 .typewriter=${true}
                 @citation-click=${this._onCitationClick}
-              ></lw-blog-overview>
+            ></lw-blog-overview>
+
+            ${this._productResults.length ? html`
+              <h3 class="further-reading">Products</h3>
+              <div class="result-list">
+                <lw-blog-list
+                  container-background="transparent"
+                  default-view="list"
+                  default-sort="default"
+                  hide-header
+                  .autoLoad=${false}
+                  .posts=${this._productResults.map(item => this._toPost(item))}
+                  .totalCount=${this._productResults.length}
+                  @post-click=${this._onPostClick}
+                ></lw-blog-list>
+              </div>` : ''}
+
+            ${this._overview.length ? html`
               <h3 class="further-reading">Further Reading</h3>` : ''}
 
             <div class="result-list">

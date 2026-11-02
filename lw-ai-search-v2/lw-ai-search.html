@@ -84,7 +84,7 @@
     <!-- btn-type="normal": a plain labelled button in normal flow.
          No hover panel — pressing it goes straight to `href`. -->
     <div class="inline-row">
-      <lw-ai-search-v2
+      <lw-ai-search
         btn-type="normal"
         btn-label="Search with AI"
         btn-subtext="Ask anything to find relevant blogs"
@@ -92,7 +92,7 @@
         search-key="pk_live_BZfN2SpXzwOh5LDvQmoDDjCkBHnf3ghscE4_6bwddAE"
         search-index="all"
         modal-top="0"
-      ></lw-ai-search-v2>
+      ></lw-ai-search>
     </div>
   </section>
 
@@ -101,7 +101,7 @@
   <!-- search-base is empty so the built-in modal requests
        /api/v1/search/all and proxy-server.js forwards it (CORS).
        In production use search-base="https://discoverai.levelworks.co". -->
-  <lw-ai-search-v2
+  <lw-ai-search
     id="launcher"
     search-base=""
     search-key="pk_live_BZfN2SpXzwOh5LDvQmoDDjCkBHnf3ghscE4_6bwddAE"
@@ -110,7 +110,7 @@
     search-display="panel"
     feedback
     style="--lw-ask-bottom: 28px; --lw-ask-right: 28px;"
-  ></lw-ai-search-v2>
+  ></lw-ai-search>
 
   <script type="module">
     import './lw-ai-search.js';

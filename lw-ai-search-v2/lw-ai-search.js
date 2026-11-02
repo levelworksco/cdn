@@ -4887,4 +4887,4 @@ export class LwAiSearch extends LitElement {
   }
 }
 
-customElements.define('lw-ai-search-v2', LwAiSearch);
+customElements.define('lw-ai-search', LwAiSearch);

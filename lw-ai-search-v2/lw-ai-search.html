@@ -91,6 +91,7 @@
         search-base=""
         search-key="pk_live_BZfN2SpXzwOh5LDvQmoDDjCkBHnf3ghscE4_6bwddAE"
         search-index="all"
+        products-search-key="tk_live_LOUECGr0vxR47FnBhUeDU7Ca2Pevk7Yv1kkaXzsrNQU"
         modal-top="0"
       ></lw-ai-search>
     </div>
@@ -106,6 +107,7 @@
     search-base=""
     search-key="pk_live_BZfN2SpXzwOh5LDvQmoDDjCkBHnf3ghscE4_6bwddAE"
     search-index="all"
+    products-search-key="tk_live_LOUECGr0vxR47FnBhUeDU7Ca2Pevk7Yv1kkaXzsrNQU"
     modal-top="0"
     search-display="panel"
     feedback
@@ -141,6 +143,11 @@
 
     launcher.addEventListener('lw-ask-cta', () => {
       say('cta → open the blog search experience');
+    });
+
+    // Parallel products /search call (same query, products index).
+    launcher.addEventListener('lw-ask-products', e => {
+      console.log('products hits:', e.detail.total, e.detail.results);
     });
 
     launcher.addEventListener('lw-ask-toggle', e => {

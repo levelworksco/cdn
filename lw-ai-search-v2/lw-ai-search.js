@@ -216,6 +216,10 @@ const CITATIONS_STYLES = new Set(['none', 'chip', 'number', 'link']);
 // hits anyway rather than keep the user waiting. See _fetchSummaryStream.
 const STREAM_HITS_GATE_MS = 3000;
 
+// Fallback index for the parallel products search (see _fetchProducts).
+// Used unless a products-index attribute is set on the tag, which overrides it.
+const PRODUCTS_INDEX = 'products';
+
 function normalizeCitationsStyle(value) {
   const v = String(value ?? '').trim().toLowerCase();
   return CITATIONS_STYLES.has(v) ? v : null;
@@ -566,6 +570,11 @@ export class LwAiSearch extends LitElement {
     searchBase: { type: String, attribute: 'search-base' },
     searchKey: { type: String, attribute: 'search-key' },
     searchIndex: { type: String, attribute: 'search-index' },
+    // The products index searched in parallel with the main one (see
+    // _fetchProducts). Optional: unset falls back to PRODUCTS_INDEX. It is
+    // key-scoped separately, so it carries its own key.
+    productsIndex: { type: String, attribute: 'products-index' },
+    productsSearchKey: { type: String, attribute: 'products-search-key' },
     semanticRatio: { type: Number, attribute: 'semantic-ratio' },
     searchPlaceholder: { type: String, attribute: 'search-placeholder' },
     theme: { type: Object },
@@ -626,6 +635,8 @@ export class LwAiSearch extends LitElement {
     _postCommit: { state: true },
     _feedbackOpen: { state: true },
     _results: { state: true },
+    // Hits from the parallel products /search call (see _fetchProducts).
+    _productResults: { state: true },
     _loading: { state: true },
     _noResults: { state: true },
     _noResultsMsg: { state: true },
@@ -2506,6 +2517,12 @@ export class LwAiSearch extends LitElement {
     this.searchBase = '';
     this.searchKey = '';
     this.searchIndex = 'all';
+    // Empty by default ("not received") so the getter falls back to
+    // PRODUCTS_INDEX; a products-index attribute overrides it.
+    this.productsIndex = '';
+    // Empty falls back to searchKey in _fetchProducts; set products-search-key
+    // on the tag to the products index's own key.
+    this.productsSearchKey = '';
     this.semanticRatio = 0.5;
     this.searchPlaceholder = 'Ask a question to get instant AI answer';
     this.theme = {};
@@ -2584,6 +2601,7 @@ export class LwAiSearch extends LitElement {
     this._resultsReady = false;
     this._postCommit = false;
     this._results = [];
+    this._productResults = [];
     this._loading = false;
     this._noResults = false;
     this._noResultsMsg = 'No results found';
@@ -2608,6 +2626,7 @@ export class LwAiSearch extends LitElement {
     this._searchCommitted = false;
     this._debounceTimer = null;
     this._abortController = null;
+    this._productsAbort = null;
     this._themeAbortController = null;
     this._didPushState = false;
     this._totalHits = 0;
@@ -2766,6 +2785,7 @@ export class LwAiSearch extends LitElement {
     clearTimeout(this._streamGateTimer);
     this._abortController?.abort();
     this._summaryAbort?.abort();
+    this._productsAbort?.abort();
     this._themeAbortController?.abort();
     super.disconnectedCallback();
   }
@@ -3731,6 +3751,8 @@ export class LwAiSearch extends LitElement {
     this._noResults = false;
     this._resultsReady = false;
     this._fetchSummaryStream(q);
+    // Fired alongside the AI overview stream, same query, different index.
+    this._fetchProducts(q);
     this._currentQuery = q;
     this._searchCommitted = true;
     this._showFeatures = false;
@@ -3829,7 +3851,9 @@ export class LwAiSearch extends LitElement {
     this._streamGateElapsed = false;
     this._streamHits = null;
     if (this._abortController) { this._abortController.abort(); this._abortController = null; }
+    this._productsAbort?.abort();
     this._results = [];
+    this._productResults = [];
     this._summaryText = '';
     this._summaryHits = [];
     this._summaryParagraphs = [];
@@ -3953,6 +3977,74 @@ export class LwAiSearch extends LitElement {
     const displayTitle = title == null ? 'Source' : title;
     const more = articles.length - 1;
     return more > 0 ? `${displayTitle} +${more}` : displayTitle;
+  }
+
+  // ── Products: POST {base}/api/v1/search/products (PRODUCTS_INDEX) ───
+  // A second search fired in parallel with the AI overview stream (see
+  // _commitSearch), on the products index, with the same query. The plain
+  // /search endpoint returns a `hits` array only — no AI overview. Hits land
+  // in _productResults and a `lw-ask-products` event is dispatched; rendering
+  // them is wired separately.
+  // The tag's products-index wins when set; otherwise the PRODUCTS_INDEX
+  // fallback constant.
+  get _productsIndex() {
+    return String(this.productsIndex ?? '').trim() || PRODUCTS_INDEX;
+  }
+
+  get _productsSearchUrl() {
+    const base = (this.searchBase || '').replace(/\/+$/, '');
+    return `${base}/api/v1/search/${encodeURIComponent(this._productsIndex)}`;
+  }
+
+  async _fetchProducts(query) {
+    // One controller per request: a rapid re-search must not let a stale
+    // response overwrite a newer one.
+    this._productsAbort?.abort();
+    const ctrl = new AbortController();
+    this._productsAbort = ctrl;
+
+    try {
+      const res = await fetch(this._productsSearchUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // The products index is key-scoped separately; fall back to the
+          // main search key when no products key is configured.
+          'X-API-KEY': this.productsSearchKey || this.searchKey,
+        },
+        // Only the /summary/stream fields that mean something to a plain hits
+        // search are kept — query, filter, semanticRatio. The AI-only fields
+        // (modelProvider, allowVastFallback, promptType) are dropped. limit is
+        // fixed at 5, page at 1.
+        body: JSON.stringify({
+          query,
+          filter: {},
+          limit: 5,
+          page: 1,
+          semanticRatio: Number(this.semanticRatio),
+        }),
+        signal: ctrl.signal,
+      });
+      if (!res.ok) throw new Error(`Products search failed: ${res.status}`);
+      const data = await res.json();
+      if (this._productsAbort !== ctrl) return;   // superseded
+
+      this._productResults = Array.isArray(data?.hits) ? data.hits : [];
+      this.dispatchEvent(new CustomEvent('lw-ask-products', {
+        detail: {
+          query,
+          index: this._productsIndex,
+          results: this._productResults,
+          total: data?.estimatedTotalHits ?? this._productResults.length,
+        },
+        bubbles: true,
+        composed: true,
+      }));
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+      console.error('<lw-ai-search> products search:', err);
+      if (this._productsAbort === ctrl) this._productResults = [];
+    }
   }
 
   // ── Overview: POST {base}/api/v1/search/{index}/summary/stream ──────
@@ -4207,6 +4299,7 @@ export class LwAiSearch extends LitElement {
     this._streamGateElapsed = false;
     this._streamHits = null;
     this._results = [];
+    this._productResults = [];
     this._summaryText = '';
     this._summaryHits = [];
     this._summaryParagraphs = [];

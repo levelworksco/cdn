@@ -4564,14 +4564,15 @@ export class LwAiSearch extends LitElement {
               <span class="metaTime">${this._metaTime}</span>
             </div>
 
-            <lw-blog-overview
+            ${this._overview.length ? html`
+              <lw-blog-overview
                 class="modal-overview"
                 heading=${this.overviewHeading}
                 display-citations=${this._resolvedCitations}
                 .paragraphs=${this._overview}
                 .typewriter=${true}
                 @citation-click=${this._onCitationClick}
-            ></lw-blog-overview>
+              ></lw-blog-overview>` : ''}
 
             ${this._productResults.length ? html`
               <h3 class="further-reading">Products</h3>

@@ -582,6 +582,7 @@ export class LwAiSearch extends LitElement {
     productsShowDescription: { type: String, attribute: 'products-show-description' },
     productsShowPrice: { type: String, attribute: 'products-show-price' },
     productsShowCart: { type: String, attribute: 'products-show-cart' },
+    productsShowCount: { type: String, attribute: 'products-show-count' },
     // For testing the layout: show "Product 1 … 6" placeholder cards after
     // every search, in place of whatever the products index returns.
     productsPlaceholder: { type: Boolean, attribute: 'products-placeholder' },
@@ -2547,6 +2548,7 @@ export class LwAiSearch extends LitElement {
     this.productsShowDescription = 'true';
     this.productsShowPrice = 'true';
     this.productsShowCart = 'true';
+    this.productsShowCount = 'true';
     this.productsPlaceholder = false;
     this.semanticRatio = 0.5;
     this.searchPlaceholder = 'Ask a question to get instant AI answer';
@@ -4606,6 +4608,7 @@ export class LwAiSearch extends LitElement {
                 show-description=${this.productsShowDescription}
                 show-price=${this.productsShowPrice}
                 show-add-to-cart=${this.productsShowCart}
+                show-count=${this.productsShowCount}
                 .products=${this._productsToShow}
                 @product-click=${this._onProductClick}
               ></lw-recommended-products>` : ''}

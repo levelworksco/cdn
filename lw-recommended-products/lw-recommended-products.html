@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>lw-recommended-products</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body { margin: 0; padding: 32px 24px 80px; background: #f4f4f4; font-family: 'Inter', sans-serif; }
+    .wrap { max-width: 960px; margin: 0 auto; }
+    h2 { margin: 40px 0 8px; font-size: 14px; font-weight: 600; color: #6b7280; }
+    .narrow { max-width: 400px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h2>4 products — a plain row, no slider</h2>
+    <lw-recommended-products id="four"></lw-recommended-products>
+
+    <h2>6 products — the 5th makes it a slider</h2>
+    <lw-recommended-products id="six"></lw-recommended-products>
+
+    <h2>Description on, price and button off</h2>
+    <lw-recommended-products id="desc" heading="Picked for you"
+      show-description="true" show-price="false" show-add-to-cart="false"></lw-recommended-products>
+
+    <h2>400px wide (like the side panel)</h2>
+    <div class="narrow"><lw-recommended-products id="narrow"></lw-recommended-products></div>
+
+    <h2>Last event</h2>
+    <pre id="log">—</pre>
+  </div>
+
+  <script type="module">
+    import './lw-recommended-products.js';
+
+    const book = (id, title, price, hue) => ({
+      id, title, price,
+      description: 'A short story for young readers about courage, kindness and finding calm in a busy world.',
+      url: '#' + id,
+      // a placeholder cover, so the demo needs no real image
+      image: 'data:image/svg+xml;utf8,' + encodeURIComponent(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="500"><rect width="400" height="500" fill="hsl(${hue} 55% 45%)"/><text x="200" y="250" font-family="Georgia" font-size="34" fill="white" text-anchor="middle">${title.slice(0, 14)}</text></svg>`),
+    });
+
+    const all = [
+      book(1, 'I Am Not Brave', 10, 200),
+      book(2, "Don't Rush The River", 10, 130),
+      book(3, 'Rabbit Learns Skunk Is Sincere', 10, 230),
+      book(4, 'In Our School, We Are Not Cruel', 10, 100),
+      book(5, 'The Quiet Garden', '12.50', 20),
+      book(6, 'Brave Little Owl', 'Rs. 15', 280),
+    ];
+
+    four.products   = all.slice(0, 4);
+    six.products    = all;
+    desc.products   = all.slice(0, 4);
+    narrow.products = all;
+
+    document.addEventListener('add-to-cart', e => log.textContent = 'add-to-cart: ' + e.detail.product.title);
+    document.addEventListener('product-click', e => log.textContent = 'product-click: ' + e.detail.product.title);
+  </script>
+</body>
+</html>

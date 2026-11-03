@@ -17,6 +17,7 @@ import { LitElement, html, css, nothing }
 //   show-description  (Boolean) — card description,  default false
 //   show-price        (Boolean) — card price,        default true
 //   show-add-to-cart  (Boolean) — "Add to cart" button, default true
+//   show-count        (Boolean) — "Showing N products" line under the row, default true
 //
 //   The three show-* flags are switched off with show-price="false" and so on.
 //
@@ -46,6 +47,7 @@ export class LwRecommendedProducts extends LitElement {
     showDescription: { converter: flag, attribute: 'show-description' },
     showPrice:       { converter: flag, attribute: 'show-price' },
     showAddToCart:   { converter: flag, attribute: 'show-add-to-cart' },
+    showCount:       { converter: flag, attribute: 'show-count' },
     _cols:           { state: true },
     _atStart:        { state: true },
     _atEnd:          { state: true },
@@ -167,6 +169,13 @@ export class LwRecommendedProducts extends LitElement {
     .cart:hover { filter: brightness(0.92); }
     .cart:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 
+    .count {
+      margin-top: 2px;
+      text-align: center;
+      font-size: 14px;
+      color: var(--lw-product-count-color, #9aa1a8);
+    }
+
     .arrow {
       appearance: none;
       position: absolute;
@@ -206,6 +215,7 @@ export class LwRecommendedProducts extends LitElement {
     this.showDescription = false;
     this.showPrice       = true;
     this.showAddToCart   = true;
+    this.showCount       = true;
     this._cols    = 4;
     this._atStart = true;
     this._atEnd   = false;
@@ -340,7 +350,10 @@ export class LwRecommendedProducts extends LitElement {
         <button class="arrow next" aria-label="Next products"
                 ?hidden=${!slider || this._atEnd}
                 @click=${() => this._page(1)}>${chevron('M9 5l7 7-7 7')}</button>
-      </div>`;
+      </div>
+      ${this.showCount
+        ? html`<p class="count" role="status">Showing ${products.length} ${products.length === 1 ? 'product' : 'products'}</p>`
+        : nothing}`;
   }
 }
 

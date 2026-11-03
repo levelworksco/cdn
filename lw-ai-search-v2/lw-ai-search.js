@@ -4745,11 +4745,29 @@ export class LwAiSearch extends LitElement {
       id: hit.id,
       title: hit.title ?? hit.name ?? '',
       image,
-      price: hit.price ?? hit.formattedPrice ?? hit.variants?.[0]?.price ?? '',
+      price: this._productPrice(hit),
       description: htmlToText(hit.summary ?? hit.description ?? hit.body),
       url: hit.canonicalUrl || hit.url || '',
       raw: hit,
     };
+  }
+
+  /**
+   * The price a product card shows. The products index returns price as a
+   * { min, max } object, each a pre-formatted string such as "5.0 USD".
+   * Show the min price (the "from" figure) when both are present, otherwise
+   * whichever one exists — passing the object straight through rendered
+   * "[object Object]". Other shapes (a plain number/string, or a variant
+   * price) are passed through unchanged.
+   */
+  _productPrice(hit) {
+    const price = hit.price ?? hit.formattedPrice ?? hit.variants?.[0]?.price ?? '';
+    if (price && typeof price === 'object' && !Array.isArray(price)) {
+      const min = price.min != null ? String(price.min).trim() : '';
+      const max = price.max != null ? String(price.max).trim() : '';
+      return min || max || '';
+    }
+    return price;
   }
 
   /** What the Recommended Products row draws: the real hits, or placeholders when testing. */

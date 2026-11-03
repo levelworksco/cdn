@@ -282,6 +282,14 @@ export class LwRecommendedProducts extends LitElement {
 
   _formatPrice(price) {
     if (price == null || price === '') return '';
+    // Some product sources send price as a { min, max } object (each value
+    // possibly pre-formatted, e.g. "5.0 USD"). Show the min price when both
+    // exist, otherwise whichever one does, rather than "[object Object]".
+    if (typeof price === 'object') {
+      const min = price.min != null ? this._formatPrice(price.min) : '';
+      const max = price.max != null ? this._formatPrice(price.max) : '';
+      return min || max || '';
+    }
     // Already text such as "Rs. 10" or "$12.00": shown as it came.
     if (typeof price === 'string' && /[^\d.,\s]/.test(price)) return price;
     const value = Number(String(price).replace(/,/g, ''));

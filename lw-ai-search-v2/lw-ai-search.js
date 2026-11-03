@@ -4575,7 +4575,7 @@ export class LwAiSearch extends LitElement {
               ></lw-blog-overview>` : ''}
 
             ${this._productResults.length ? html`
-              <h3 class="further-reading">Products</h3>
+              <h3 class="further-reading">Recommended Products</h3>
               <div class="result-list">
                 <lw-blog-list
                   container-background="transparent"

@@ -376,6 +376,7 @@ function loadGoogleFont(value) {
   return promise;
 }
 import '../lw-blog-overview/lw-blog-overview.js';
+import '../lw-recommended-products/lw-recommended-products.js';
 
 // ─────────────────────────────────────────────────────────────
 // COMPONENT: <lw-ai-search>
@@ -575,6 +576,15 @@ export class LwAiSearch extends LitElement {
     // key-scoped separately, so it carries its own key.
     productsIndex: { type: String, attribute: 'products-index' },
     productsSearchKey: { type: String, attribute: 'products-search-key' },
+    // How the Recommended Products row under the answer is drawn. The three
+    // flags take "true" / "false"; they are passed straight to the element.
+    productsHeading: { type: String, attribute: 'products-heading' },
+    productsShowDescription: { type: String, attribute: 'products-show-description' },
+    productsShowPrice: { type: String, attribute: 'products-show-price' },
+    productsShowCart: { type: String, attribute: 'products-show-cart' },
+    // For testing the layout: show "Product 1 … 6" placeholder cards after
+    // every search, in place of whatever the products index returns.
+    productsPlaceholder: { type: Boolean, attribute: 'products-placeholder' },
     semanticRatio: { type: Number, attribute: 'semantic-ratio' },
     searchPlaceholder: { type: String, attribute: 'search-placeholder' },
     theme: { type: Object },
@@ -1435,7 +1445,8 @@ export class LwAiSearch extends LitElement {
       #ai-search-overlay.as-panel .further-reading { font-size: 24px; }
       /* one class more than the panel's own 15px rule further down, which
          would otherwise win by coming later */
-      #ai-search-overlay.as-panel .modal-results .modal-overview { --lw-overview-heading-size: 24px; }
+      #ai-search-overlay.as-panel .modal-results .modal-overview,
+      #ai-search-overlay.as-panel .modal-results .modal-products { --lw-overview-heading-size: 24px; }
     }
 
     /* The card is fixed to the foot of the panel, the full width of it,
@@ -2269,6 +2280,15 @@ export class LwAiSearch extends LitElement {
       background-color: transparent;
     }
 
+    /* Recommended Products, drawn under the answer. Its heading is sized
+       with the answer's and Further Reading's. */
+    .modal-products {
+      display: block;
+      margin: 8px 0 6px;
+      --lw-overview-heading-size: 24px;
+    }
+    #ai-search-overlay.as-panel .modal-products { --lw-overview-heading-size: 15px; }
+
     .modal-overview {
       display: block;
       margin-bottom: 4px;
@@ -2523,6 +2543,11 @@ export class LwAiSearch extends LitElement {
     // Empty falls back to searchKey in _fetchProducts; set products-search-key
     // on the tag to the products index's own key.
     this.productsSearchKey = '';
+    this.productsHeading = 'Recommended Products';
+    this.productsShowDescription = 'true';
+    this.productsShowPrice = 'true';
+    this.productsShowCart = 'true';
+    this.productsPlaceholder = false;
     this.semanticRatio = 0.5;
     this.searchPlaceholder = 'Ask a question to get instant AI answer';
     this.theme = {};
@@ -4574,20 +4599,16 @@ export class LwAiSearch extends LitElement {
                 @citation-click=${this._onCitationClick}
               ></lw-blog-overview>` : ''}
 
-            ${this._productResults.length ? html`
-              <h3 class="further-reading">Recommended Products</h3>
-              <div class="result-list">
-                <lw-blog-list
-                  container-background="transparent"
-                  default-view="list"
-                  default-sort="default"
-                  hide-header
-                  .autoLoad=${false}
-                  .posts=${this._productResults.map(item => this._toPost(item))}
-                  .totalCount=${this._productResults.length}
-                  @post-click=${this._onPostClick}
-                ></lw-blog-list>
-              </div>` : ''}
+            ${this._productsToShow.length ? html`
+              <lw-recommended-products
+                class="modal-products"
+                heading=${this.productsHeading}
+                show-description=${this.productsShowDescription}
+                show-price=${this.productsShowPrice}
+                show-add-to-cart=${this.productsShowCart}
+                .products=${this._productsToShow}
+                @product-click=${this._onProductClick}
+              ></lw-recommended-products>` : ''}
 
             ${this._overview.length ? html`
               <h3 class="further-reading">Further Reading</h3>` : ''}
@@ -4703,6 +4724,57 @@ export class LwAiSearch extends LitElement {
       </div>
     `;
   }
+
+  /**
+   * Normalise a hit from the products index into what
+   * <lw-recommended-products> draws. The field names a products index uses
+   * are not fixed, so the usual ones are tried in turn; a card simply omits
+   * whatever a hit does not have.
+   */
+  _toProduct(hit) {
+    const first = hit.images?.[0];
+    const image = String(
+      hit.imageUrl ?? hit.image ?? (typeof first === 'string' ? first : first?.src ?? first?.url)
+      ?? hit.featuredImage ?? '',
+    ).replace(/^\/\//, 'https://');
+
+    return {
+      id: hit.id,
+      title: hit.title ?? hit.name ?? '',
+      image,
+      price: hit.price ?? hit.formattedPrice ?? hit.variants?.[0]?.price ?? '',
+      description: htmlToText(hit.summary ?? hit.description ?? hit.body),
+      url: hit.canonicalUrl || hit.url || '',
+      raw: hit,
+    };
+  }
+
+  /** What the Recommended Products row draws: the real hits, or placeholders when testing. */
+  get _productsToShow() {
+    if (this.productsPlaceholder) return LwAiSearch.placeholderProducts;
+    return this._productResults.map(item => this._toProduct(item));
+  }
+
+  // "Product 1 … 6", each with a plain coloured cover, for trying the row
+  // out (4 in a row, then the slider) without a products index.
+  static placeholderProducts = Array.from({ length: 6 }, (_, i) => ({
+    id: `placeholder-${i + 1}`,
+    title: `Product ${i + 1}`,
+    price: 10 * (i + 1),
+    description: 'Placeholder description for this product, only here to check how the card looks.',
+    url: '',
+    image: 'data:image/svg+xml;utf8,' + encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="500"><rect width="400" height="500" fill="hsl(${(i * 55 + 200) % 360} 50% 48%)"/><text x="200" y="262" font-family="Georgia,serif" font-size="40" fill="white" text-anchor="middle">Product ${i + 1}</text></svg>`),
+  }));
+
+  /** A product card was opened: same hand-off a Further Reading row makes. */
+  _onProductClick = (e) => {
+    this.dispatchEvent(new CustomEvent('lw-ask-product-click', {
+      detail: { product: e.detail?.product },
+      bubbles: true,
+      composed: true,
+    }));
+  };
 
   /**
    * Normalise a raw search hit into the `post` shape <lw-blog-list-item>

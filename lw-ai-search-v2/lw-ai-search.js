@@ -583,6 +583,9 @@ export class LwAiSearch extends LitElement {
     productsShowPrice: { type: String, attribute: 'products-show-price' },
     productsShowCart: { type: String, attribute: 'products-show-cart' },
     productsShowCount: { type: String, attribute: 'products-show-count' },
+    // Where the logo in the header links to. Empty: the theme's logo link,
+    // else the site's home page.
+    logoHref: { type: String, attribute: 'logo-href' },
     // For testing the layout: show "Product 1 … 6" placeholder cards after
     // every search, in place of whatever the products index returns.
     productsPlaceholder: { type: Boolean, attribute: 'products-placeholder' },
@@ -1729,8 +1732,7 @@ export class LwAiSearch extends LitElement {
     }
     #ai-search-overlay.as-panel #ai-search-modal.post-commit .search-bar {
       position: sticky;
-      /* measured inside the modal's top padding, so 0 lands it right
-         under the logo row */
+      /* held at the very top of the scrolling panel */
       top: 0;
       z-index: 1;
       padding: 6px 16px 10px;
@@ -1740,7 +1742,7 @@ export class LwAiSearch extends LitElement {
        under it, and a title that holds its own beside the image. */
     #ai-search-overlay.as-panel .modal-results {
       --pl-image-margin-bottom-mobile: 10px;
-      --pl-title-font-size-mobile: 15px;
+      --pl-title-font-size-mobile: 18px;
     }
     #ai-search-overlay.as-panel #ai-search-modal.post-commit .modal-results,
     #ai-search-overlay.as-panel #ai-search-modal.post-commit .modal-loader {
@@ -1754,6 +1756,35 @@ export class LwAiSearch extends LitElement {
       display: block;
       height: 56px;
       background: var(--lw-ai-page-bg, var(--lw-ask-modal-bg, #f4f4f4));
+    }
+
+    /* ── Phones: the header scrolls away ──
+       The logo and close button are the first row of the page rather than a
+       strip floating over it, so once the reader has scrolled, the whole
+       height of the screen is the answer. (The search field is the only
+       thing that stays, held at the top.) */
+    @media (max-width: 560px) {
+      #ai-search-overlay.as-panel #ai-search-modal,
+      #ai-search-overlay.as-panel #ai-search-modal.post-commit { padding-top: 0; }
+
+      #ai-search-overlay.as-panel #ai-search-modal > .modal-head {
+        position: relative;
+        top: auto;
+        left: auto;
+        right: auto;
+        flex: none;
+        /* the full width of the panel, so the close button sits at its right
+           edge instead of next to a logo-wide header */
+        width: 100%;
+        align-self: stretch;
+        height: 56px;
+        transform: none;
+        transition: none;
+        pointer-events: auto;
+      }
+      /* no solid band behind it: nothing passes underneath any more */
+      #ai-search-overlay.as-panel #ai-search-modal > .modal-head::before { display: none; }
+      #ai-search-overlay.as-panel.is-answered #ai-search-modal > .modal-head::before { display: none; }
     }
 
     #ai-search-modal {
@@ -1912,7 +1943,12 @@ export class LwAiSearch extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
+      /* it is a link now */
+      color: inherit;
+      text-decoration: none;
+      cursor: pointer;
     }
+    .client-logo:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; border-radius: 4px; }
     .client-logo img {
       display: block;
       max-width: 100%;
@@ -2098,13 +2134,16 @@ export class LwAiSearch extends LitElement {
       padding: 0 0 10px;
       max-height: calc(var(--lw-field-line) * 4 + 10px);
     }
-    .search-input-wrapper.is-multi .char-count { grid-area: count; align-self: end; padding-bottom: 2px; }
+    .search-input-wrapper.is-multi .char-count { grid-area: count; align-self: end; line-height: 1; }
     .search-input-wrapper.is-multi .clear-text {
       grid-area: clear;
       display: block;
       justify-self: start;
       align-self: end;
-      padding: 0 0 2px;
+      /* line-height 1 and no padding: the text sits right on the bottom
+         edge of the row, level with the foot of the round search button */
+      line-height: 1;
+      padding: 0;
       border: none;
       background: none;
       font: inherit;
@@ -2663,6 +2702,7 @@ export class LwAiSearch extends LitElement {
     this.productsShowPrice = 'true';
     this.productsShowCart = 'true';
     this.productsShowCount = 'true';
+    this.logoHref = '';
     this.productsPlaceholder = false;
     this.semanticRatio = 0.5;
     this.searchPlaceholder = 'Ask a question to get instant AI answer';
@@ -4620,6 +4660,65 @@ export class LwAiSearch extends LitElement {
       </div>`;
   }
 
+  /**
+   * The logo, the layout switcher and the close button. On a computer they
+   * float over the modal (see the note where this is placed); on a phone
+   * they are the first thing inside it and scroll away with the page, so
+   * the answer gets the whole height of the screen.
+   */
+  _renderModalHead() {
+    return html`
+        <div class="modal-head">
+          ${(() => {
+        const panel = this._isPanel;
+        const option = (mode, icon, label) => html`
+              <button class="display-option"
+                      aria-pressed=${(mode === 'panel') === panel ? 'true' : 'false'}
+                      aria-label=${label}
+                      title=${label}
+                      @click=${() => this._setDisplayMode(mode)}>${icon}</button>`;
+        return html`
+              <div id="ai-search-display" role="group" aria-label="Search layout">
+                ${option('fullpage', LwAiSearch.expandIcon, 'Full page')}
+                ${option('panel', LwAiSearch.panelIcon, 'Side panel')}
+              </div>`;
+      })()}
+
+          <button id="ai-search-close" aria-label="Close search"
+                  @click=${this.closeSearch}>&times;</button>
+
+          <a class="client-logo" href=${this._logoHref} aria-label="Home"
+             @click=${this._onLogoClick}>
+            ${this._resolvedTheme.logo.image
+        ? html`<img src=${this._resolvedTheme.logo.image} alt="Logo" />`
+        : html`
+                <div class="client-logo-placeholder" role="img" aria-label="Logo">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                    <circle cx="8" cy="9" r="1.5" fill="currentColor"/>
+                    <path d="m5 17 4.5-4.5a1.5 1.5 0 0 1 2.12 0L14 14.88l1.38-1.38a1.5 1.5 0 0 1 2.12 0L19 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <span>Logo</span>
+                </div>`}
+          </a>
+        </div>`;
+  }
+
+  /** Where the logo goes: logo-href on the tag, else the theme's, else the site's home. */
+  get _logoHref() {
+    return String(this.logoHref || this._resolvedTheme.logo.link || '/');
+  }
+
+  /** On the page it points at already, the logo just closes the search. */
+  _onLogoClick = (e) => {
+    try {
+      if (new URL(this._logoHref, location.href).href === location.href) {
+        e.preventDefault();
+        this.closeSearch();
+      }
+    } catch { /* an odd href: let the browser handle it */ }
+  };
+
   _renderModal() {
     const suggestedStyle = this._suggestedQuestionsStyle;
     const questionLimit = suggestedStyle === 'chips'
@@ -4637,6 +4736,8 @@ export class LwAiSearch extends LitElement {
              aria-modal="true"
              aria-label=${`${this._resolvedTheme.text.header.text} search`}
              @scroll=${this._onModalScroll}>
+
+          ${this._isPhone ? this._renderModalHead() : ''}
 
           <div class="hero">
             <h1>${this._resolvedTheme.text.header.text}</h1>
@@ -4754,45 +4855,14 @@ export class LwAiSearch extends LitElement {
           </div>
         </div>
 
-        <!-- Outside #ai-search-modal on purpose. In full page the modal
-             is what scrolls, and a head inside it would scroll away with
-             the answer, taking the close button with it. Out here it
-             floats over the modal instead, so the way out is always on
-             screen. (In panel mode the modal is also transformed, which
-             would make it the containing block for anything fixed.) -->
-        <div class="modal-head">
-          ${(() => {
-        const panel = this._isPanel;
-        const option = (mode, icon, label) => html`
-              <button class="display-option"
-                      aria-pressed=${(mode === 'panel') === panel ? 'true' : 'false'}
-                      aria-label=${label}
-                      title=${label}
-                      @click=${() => this._setDisplayMode(mode)}>${icon}</button>`;
-        return html`
-              <div id="ai-search-display" role="group" aria-label="Search layout">
-                ${option('fullpage', LwAiSearch.expandIcon, 'Full page')}
-                ${option('panel', LwAiSearch.panelIcon, 'Side panel')}
-              </div>`;
-      })()}
-
-          <button id="ai-search-close" aria-label="Close search"
-                  @click=${this.closeSearch}>&times;</button>
-
-          <div class="client-logo" aria-label="Logo">
-            ${this._resolvedTheme.logo.image
-        ? html`<img src=${this._resolvedTheme.logo.image} alt="Logo" />`
-        : html`
-                <div class="client-logo-placeholder" role="img" aria-label="Logo">
-                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/>
-                    <circle cx="8" cy="9" r="1.5" fill="currentColor"/>
-                    <path d="m5 17 4.5-4.5a1.5 1.5 0 0 1 2.12 0L14 14.88l1.38-1.38a1.5 1.5 0 0 1 2.12 0L19 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  <span>Logo</span>
-                </div>`}
-          </div>
-        </div>
+        <!-- Outside #ai-search-modal on purpose, on a computer. In full page the
+             modal is what scrolls, and a head inside it would scroll away with
+             the answer, taking the close button with it. Out here it floats
+             over the modal instead, so the way out is always on screen. (In
+             panel mode the modal is also transformed, which would make it the
+             containing block for anything fixed.) On a phone the head sits
+             inside the modal instead -- see _renderModalHead. -->
+        ${this._isPhone ? '' : this._renderModalHead()}
 
         ${/* Feedback card: switched off, the CTAs below link to the
              contact page instead. Kept for when it comes back.

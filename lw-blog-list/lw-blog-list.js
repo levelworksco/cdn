@@ -1040,7 +1040,7 @@ export class LwBlogList extends LitElement {
             : ''}
 
           ${!this.loading && hasResults ? html`
-            <div class="pl-footer">Showing ${sorted.length} blogs${sorted.length === 1 ? '' : 's'}</div>
+            <div class="pl-footer">Showing ${sorted.length} blog${sorted.length === 1 ? '' : 's'}</div>
           ` : ''}
 
         </div>

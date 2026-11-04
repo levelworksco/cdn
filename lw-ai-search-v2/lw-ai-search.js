@@ -2561,7 +2561,7 @@ export class LwAiSearch extends LitElement {
     this._backendQuestions = [];
     this._backendCitationsStyle = null;
     this.promptType = null;
-    this.overviewHeading = 'AI Answer';
+    this.overviewHeading = 'AI Response';
     this.overviewCitations = 'none';
     this.overviewParagraphs = [];
     this.modalTop = '';

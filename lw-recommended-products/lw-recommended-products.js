@@ -18,6 +18,11 @@ import { LitElement, html, css, nothing }
 //   show-price        (Boolean) — card price,        default true
 //   show-add-to-cart  (Boolean) — "Add to cart" button, default true
 //   show-count        (Boolean) — "Showing N products" line under the row, default true
+//   empty-message     (String)  — shown under the heading when `products` is
+//                                 empty (e.g. "No results found"). When unset,
+//                                 an empty `products` renders nothing at all —
+//                                 so a host that simply has no products yet is
+//                                 not left with a stray heading.
 //
 //   The three show-* flags are switched off with show-price="false" and so on.
 //
@@ -48,6 +53,7 @@ export class LwRecommendedProducts extends LitElement {
     showPrice:       { converter: flag, attribute: 'show-price' },
     showAddToCart:   { converter: flag, attribute: 'show-add-to-cart' },
     showCount:       { converter: flag, attribute: 'show-count' },
+    emptyMessage:    { type: String, attribute: 'empty-message' },
     _cols:           { state: true },
     _atStart:        { state: true },
     _atEnd:          { state: true },
@@ -176,6 +182,13 @@ export class LwRecommendedProducts extends LitElement {
       color: var(--lw-product-count-color, #9aa1a8);
     }
 
+    /* Shown in place of the row when a search came back with no products. */
+    .empty {
+      padding: 1.5rem 0;
+      font-size: 14px;
+      color: var(--lw-ai-results-body-color, #9aa1a8);
+    }
+
     .arrow {
       appearance: none;
       position: absolute;
@@ -216,6 +229,7 @@ export class LwRecommendedProducts extends LitElement {
     this.showPrice       = true;
     this.showAddToCart   = true;
     this.showCount       = true;
+    this.emptyMessage    = '';
     this._cols    = 4;
     this._atStart = true;
     this._atEnd   = false;
@@ -336,7 +350,15 @@ export class LwRecommendedProducts extends LitElement {
 
   render() {
     const products = this.products ?? [];
-    if (!products.length) return nothing;
+    if (!products.length) {
+      // No empty message configured: nothing to show (e.g. a host that just
+      // hasn't been given products yet). With one set — a search that came
+      // back empty — keep the heading and say so rather than vanishing.
+      if (!this.emptyMessage) return nothing;
+      return html`
+        ${this.heading ? html`<h3>${this.heading}</h3>` : nothing}
+        <p class="empty" role="status">${this.emptyMessage}</p>`;
+    }
 
     const slider = this._isSlider;
     const chevron = d => html`

@@ -4601,7 +4601,7 @@ export class LwAiSearch extends LitElement {
                 @citation-click=${this._onCitationClick}
               ></lw-blog-overview>` : ''}
 
-            ${this._productsToShow.length ? html`
+            ${(this._productsToShow.length || !this._noResults) ? html`
               <lw-recommended-products
                 class="modal-products"
                 heading=${this.productsHeading}
@@ -4609,6 +4609,7 @@ export class LwAiSearch extends LitElement {
                 show-price=${this.productsShowPrice}
                 show-add-to-cart=${this.productsShowCart}
                 show-count=${this.productsShowCount}
+                empty-message=${this._noResultsMsg}
                 .products=${this._productsToShow}
                 @product-click=${this._onProductClick}
               ></lw-recommended-products>` : ''}

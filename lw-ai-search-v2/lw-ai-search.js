@@ -114,6 +114,7 @@ function mergeTheme(base, override) {
 const BACKEND_THEME_MAP = {
   WidgetStyle: ['widget', 'style'],
   WidgetPosition: ['widget', 'position'],
+  DefaultSearchStyle: ['widget', 'defaultSearchStyle'],
   HelperText: ['widget', 'helperText'],
   WidgetBackgroundColor: ['widget', 'backgroundColor'],
   WidgetIconColor: ['widget', 'iconColor'],
@@ -3262,14 +3263,21 @@ export class LwAiSearch extends LitElement {
   }
 
   /**
-   * The bar shows the suggested questions, always. Its search and
-   * scroll modes (and the icons that switched between them) are still in
-   * the code but hidden, so neither the visitor nor the bar-mode attribute
-   * can reach them; to bring them back, return the old choice here and
-   * remove the display:none on .bar-modes.
+   * What the bar shows: 'search', 'questions' (the fixed four) or 'scroll'
+   * (every question, moving). The icons that let a visitor switch are hidden
+   * (display:none on .bar-modes), so this is chosen for them: the tag's
+   * bar-mode attribute, else the Default Search Style set in the admin panel
+   * (the styling config's DefaultSearchStyle), else the suggested questions.
+   * Empty or unknown values mean 'questions'. Phones always get the swipeable
+   * row of questions.
    */
   get _activeBarMode() {
-    return 'questions';
+    if (this._isPhone) return 'questions';
+    const configured = this._resolvedTheme.widget?.defaultSearchStyle;
+    const chosen = String(this._barMode || this.barMode || configured || '')
+      .trim()
+      .toLowerCase();
+    return LwAiSearch.barModes.includes(chosen) ? chosen : 'questions';
   }
 
   _setBarMode(mode) {

@@ -594,6 +594,12 @@ export class LwAiSearch extends LitElement {
     theme: { type: Object },
     // Overview shown above the results, rendered by <lw-blog-overview>
     overviewHeading: { type: String, attribute: 'overview-heading' },
+    // How the AI answer streams in (FlowToken-style): fadeIn | blurIn | slideUp |
+    // dropIn | fadeAndScale | blurAndSharpen | highlight, or "none" for the plain
+    // typewriter with a caret.
+    answerAnimation: { type: String, attribute: 'answer-animation' },
+    answerAnimationSep: { type: String, attribute: 'answer-animation-sep' },       // 'word' | 'char'
+    answerAnimationDuration: { type: String, attribute: 'answer-animation-duration' },
     overviewCitations: { type: String, attribute: 'overview-citations' },
     overviewParagraphs: { type: Array, attribute: 'overview-paragraphs' },
     modalTop: { type: String, attribute: 'modal-top' },
@@ -2716,6 +2722,9 @@ export class LwAiSearch extends LitElement {
     this._backendCitationsStyle = null;
     this.promptType = null;
     this.overviewHeading = 'AI Answer';
+    this.answerAnimation = 'fadeIn';
+    this.answerAnimationSep = 'word';
+    this.answerAnimationDuration = '0.6s';
     this.overviewCitations = 'none';
     this.overviewParagraphs = [];
     this.modalTop = '';
@@ -4811,6 +4820,9 @@ export class LwAiSearch extends LitElement {
                 display-citations=${this._resolvedCitations}
                 .paragraphs=${this._overview}
                 .typewriter=${true}
+                .animation=${this.answerAnimation === 'none' ? '' : this.answerAnimation}
+                .sep=${this.answerAnimationSep}
+                .animationDuration=${this.answerAnimationDuration}
                 @citation-click=${this._onCitationClick}
               ></lw-blog-overview>` : ''}
 

@@ -134,6 +134,15 @@ export class LwBlogOverview extends LitElement {
     displayCitations: { type: String, attribute: 'display-citations' }, // 'none' | 'number' | 'chip' | 'link'
     // Reveal the answer as if it were being typed, then show the citations.
     typewriter:       { type: Boolean },
+    // FlowToken-style streaming (https://github.com/Ephibbs/flowtoken): while the
+    // answer is revealed, each new word (or character) mounts as its own span and
+    // plays a CSS keyframe. Set `animation` to one of: fadeIn, blurIn, slideUp,
+    // dropIn, fadeAndScale, blurAndSharpen, highlight. Empty = the plain
+    // typewriter with a caret.
+    animation:        { type: String },
+    sep:              { type: String },                                  // 'word' | 'char'
+    animationDuration:       { type: String, attribute: 'animation-duration' },
+    animationTimingFunction: { type: String, attribute: 'animation-timing-function' },
     _typed:           { state: true },   // characters revealed so far
   };
 
@@ -198,6 +207,29 @@ export class LwBlogOverview extends LitElement {
       animation: lw-caret-blink 0.9s steps(1) infinite;
     }
     @keyframes lw-caret-blink { 50% { opacity: 0; } }
+
+    /* ── FlowToken-style token animations ── */
+    .tok {
+      display: inline-block;
+      animation-duration: var(--lw-flow-duration, 0.6s);
+      animation-timing-function: var(--lw-flow-ease, ease-out);
+      animation-fill-mode: both;
+    }
+    .tok.fadeIn         { animation-name: lw-flow-fadeIn; }
+    .tok.blurIn         { animation-name: lw-flow-blurIn; }
+    .tok.slideUp        { animation-name: lw-flow-slideUp; }
+    .tok.dropIn         { animation-name: lw-flow-dropIn; }
+    .tok.fadeAndScale   { animation-name: lw-flow-fadeAndScale; }
+    .tok.blurAndSharpen { animation-name: lw-flow-blurAndSharpen; }
+    .tok.highlight      { animation-name: lw-flow-highlight; border-radius: 3px; }
+    @keyframes lw-flow-fadeIn         { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes lw-flow-blurIn         { from { opacity: 0; filter: blur(6px); } to { opacity: 1; filter: blur(0); } }
+    @keyframes lw-flow-slideUp        { from { opacity: 0; transform: translateY(0.6em); } to { opacity: 1; transform: none; } }
+    @keyframes lw-flow-dropIn         { from { opacity: 0; transform: translateY(-0.6em); } to { opacity: 1; transform: none; } }
+    @keyframes lw-flow-fadeAndScale   { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: none; } }
+    @keyframes lw-flow-blurAndSharpen { from { opacity: 0; filter: blur(8px); transform: scale(1.1); } to { opacity: 1; filter: blur(0); transform: none; } }
+    @keyframes lw-flow-highlight      { from { background: rgba(255, 213, 79, 0.55); } to { background: transparent; } }
+    @media (prefers-reduced-motion: reduce) { .tok { animation: none; } }
 
     .citation {
       display: inline-flex;
@@ -312,7 +344,11 @@ export class LwBlogOverview extends LitElement {
     this.displayCitations = 'chip';
     this._cards           = [];
     this.typewriter       = false;
-    this._typed           = Infinity;   // everything, until a typing run starts
+    this.animation        = '';
+    this.sep              = 'word';
+    this.animationDuration       = '';
+    this.animationTimingFunction = '';
+    this._typed          = Infinity;   // everything, until a typing run starts
     this._typedSignature  = '';
     this._typingFrame     = 0;
   }
@@ -546,9 +582,34 @@ export class LwBlogOverview extends LitElement {
     return nothing;
   }
 
+  static KNOWN_ANIMATIONS = ['fadeIn', 'blurIn', 'slideUp', 'dropIn', 'fadeAndScale', 'blurAndSharpen', 'highlight'];
+
+  // The revealed part of `text` as FlowToken-style tokens. A word only appears
+  // once all of it has been "streamed"; the whitespace stays outside the span so
+  // inline-block never swallows it. Spans keep their position in the list, so a
+  // re-render only mounts (and animates) the newly revealed ones.
+  _renderTokens(text, revealed, animation) {
+    const byChar = this.sep === 'char';
+    const re = byChar ? /[\s\S]/g : /(\S+)(\s*)/g;
+    const out = [];
+    let m;
+    while ((m = re.exec(text))) {
+      const word = byChar ? m[0] : m[1];
+      const gap  = byChar ? '' : m[2];
+      if (m.index + word.length > revealed) break;
+      out.push(html`<span class="tok ${animation}">${word}</span>${gap}`);
+    }
+    return out;
+  }
+
   render() {
     const mode         = this.displayCitations ?? 'chip';
     const articleIndex = (mode === 'number') ? this._buildArticleIndex() : null;
+    const flow = this.typewriter && LwBlogOverview.KNOWN_ANIMATIONS.includes(this.animation)
+      ? this.animation : '';
+    const flowStyle = flow
+      ? `${this.animationDuration ? `--lw-flow-duration:${this.animationDuration};` : ''}${this.animationTimingFunction ? `--lw-flow-ease:${this.animationTimingFunction};` : ''}`
+      : '';
 
     return html`
       <div class="container">
@@ -556,7 +617,7 @@ export class LwBlogOverview extends LitElement {
           <path d="M10 3l1.9 5.1L17 10l-5.1 1.9L10 17l-1.9-5.1L3 10l5.1-1.9L10 3z"/>
           <path d="M18 14l.9 2.1L21 17l-2.1.9L18 20l-.9-2.1L15 17l2.1-.9L18 14z"/>
         </svg></h1>
-        <div class="paragraphs">
+        <div class="paragraphs" style=${flowStyle}>
           ${(() => {
             let left = this._typed;           // characters still to reveal
             return this.paragraphs.map((para, i) => {
@@ -564,7 +625,13 @@ export class LwBlogOverview extends LitElement {
               if (left <= 0 && i > 0) return nothing;   // not reached yet
               const done = left >= text.length;
               const shown = done ? text : text.slice(0, left);
+              const revealed = left;
               left -= text.length;
+              if (flow) {
+                return html`<p>${this._renderTokens(text, done ? text.length : revealed, flow)}${done
+                  ? this._renderCitation(para.citation, mode, articleIndex)
+                  : nothing}</p>`;
+              }
               return html`<p>${shown}${done
                 ? this._renderCitation(para.citation, mode, articleIndex)
                 : html`<span class="caret"></span>`}</p>`;

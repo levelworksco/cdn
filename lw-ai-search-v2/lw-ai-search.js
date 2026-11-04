@@ -888,44 +888,136 @@ export class LwAiSearch extends LitElement {
       width: auto;
     }
 
-    /* The bar and its minimize tab share a wrapper so the tab can sit
-       above the bar's top edge and stay put once the bar is hidden. */
     .bar-wrap {
       position: relative;
       width: 100%;
     }
 
-    .bar-toggle {
-      position: absolute;
-      right: var(--lw-ask-bar-toggle-right, 28px);
-      bottom: 100%;
+    /* The mode icons are hidden (see .bar-modes below), so their divider goes too. */
+    .bar-divider { display: none; }
+
+    /* Collapse arrow at the left end of the strip. Pressing it shrinks the
+       strip down into the little box in the corner (.bar-restore). */
+    .bar-collapse {
       appearance: none;
       border: none;
+      background: none;
+      flex: none;
+      display: inline-flex;
+      padding: 6px;
+      color: var(--lw-ask-bar-toggle-color,
+             var(--lw-ai-widget-icon-color, #F58635));
+      cursor: pointer;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+    /* the arrow fills only the middle of its box, so the box is large */
+    .bar-collapse svg { width: 48px; height: 48px; display: block; margin: -8px; }
+    .bar-collapse:hover { transform: translate(-2px, 2px); }
+    .bar-collapse:focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: 2px;
+      border-radius: 6px;
+    }
+
+    /* ── Minimize / restore, animated ──
+       Both the strip and the corner box stay in the DOM and trade places.
+       Closing: the strip is clipped down, from the right, to the size of the
+       box while its contents fade, and the box fades up in the corner.
+       Opening plays the same thing backwards. Minimized, both are taken out
+       of flow, so the host has no height and the page behind stays clickable. */
+    .bar-wrap { --box: var(--lw-ask-bar-restore-size, 64px); }
+
+    .bar-wrap .bar {
+      clip-path: inset(0px 0px 0px 0px round 0px 0px 0px 0px);
+      transition: clip-path 0.42s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .bar-wrap .bar > * { transition: opacity 0.22s ease 0.12s; }
+
+    .bar-wrap.is-minimized .bar {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      clip-path: inset(calc(100% - var(--box)) calc(100% - var(--box)) 0px 0px round 0px 12px 0px 0px);
+      visibility: hidden;          /* out of reach once it has closed */
+      pointer-events: none;
+      transition: clip-path 0.42s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 0.42s;
+    }
+    .bar-wrap.is-minimized .bar > * { opacity: 0; transition: opacity 0.16s ease; }
+
+    .bar-restore {
+      appearance: none;
+      border: none;
+      position: absolute;
+      left: 0;
+      bottom: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 7px 10px 5px;
-      border-radius: 10px 10px 0 0;
-      background: var(--lw-ai-widget-bg, #ffffff);
-      /* Widget › Icon Colour, the same setting behind the mode icons and
-         the floating button's glyph. Slightly recessive at rest, since
-         the tab is a secondary control, and full strength on hover. */
+      width: var(--box);
+      height: var(--box);
+      border-radius: 0 12px 0 0;
+      background: var(--lw-ai-widget-bg, #000000);
       color: var(--lw-ask-bar-toggle-color,
-             var(--lw-ai-widget-icon-color, rgba(17, 17, 17, 0.9)));
-      opacity: var(--lw-ask-bar-toggle-opacity, 0.6);
+             var(--lw-ai-widget-icon-color, #F58635));
       cursor: pointer;
-      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.10);
-      transition: color 0.15s, opacity 0.15s;
+      box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.16);
+      opacity: 0;
+      transform: scale(0.85);
+      transform-origin: bottom left;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.18s ease, transform 0.25s ease, visibility 0s linear 0.25s;
     }
-    .bar-toggle:hover { opacity: var(--lw-ask-bar-toggle-opacity-hover, 1); }
-    .bar-toggle svg { width: 20px; height: 20px; display: block; }
-    .bar-toggle:focus-visible {
-      outline: 2px solid currentColor;
-      outline-offset: -2px;
+    .bar-wrap.is-minimized .bar-restore {
+      opacity: 1;
+      transform: none;
+      visibility: visible;
+      pointer-events: auto;
+      transition: opacity 0.26s ease 0.2s, transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s, visibility 0s;
     }
+    .bar-wrap.is-minimized .bar-restore:hover { transform: scale(1.05); }
+    .bar-restore svg { position: relative; width: 60%; height: 60%; display: block; }
 
-    /* Minimized: the strip itself goes, the tab stays as the way back. */
-    .bar-wrap.is-minimized .bar { display: none; }
+    /* A gentle reminder that it is there: every few seconds a soft band of
+       light crosses the box and the sparkle brightens a little. It only
+       runs while minimized, starting a moment after the strip has closed. */
+    .bar-restore { overflow: hidden; }
+    .bar-restore::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 55%;
+      background: linear-gradient(100deg,
+        transparent 0%, rgba(255, 255, 255, 0.22) 50%, transparent 100%);
+      transform: translateX(-140%) skewX(-18deg);
+      pointer-events: none;
+      opacity: 0;
+    }
+    .bar-wrap.is-minimized .bar-restore::after {
+      animation: lw-restore-shine var(--lw-ask-restore-shine-interval, 5s) ease-in-out 2s infinite;
+    }
+    .bar-wrap.is-minimized .bar-restore svg {
+      animation: lw-restore-glow var(--lw-ask-restore-shine-interval, 5s) ease-in-out 2s infinite;
+    }
+    @keyframes lw-restore-shine {
+      0%        { transform: translateX(-140%) skewX(-18deg); opacity: 1; }
+      22%, 100% { transform: translateX(300%) skewX(-18deg); opacity: 1; }
+    }
+    @keyframes lw-restore-glow {
+      0%, 30%, 100% { filter: none; }
+      12%           { filter: brightness(1.5) drop-shadow(0 0 4px rgba(245, 134, 53, 0.55)); }
+    }
+    .bar-restore:focus-visible { outline: 2px solid currentColor; outline-offset: -4px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bar-wrap .bar,
+      .bar-wrap .bar > *,
+      .bar-restore { transition: none !important; }
+      .bar-restore::after,
+      .bar-restore svg { animation: none !important; }
+    }
 
     .bar {
       display: flex;
@@ -988,7 +1080,7 @@ export class LwAiSearch extends LitElement {
        the first four questions, or every question scrolling past. */
     .bar-modes {
       flex: none;
-      display: flex;
+      display: none;   /* hidden: the bar is the suggested questions only */
       align-items: center;
       gap: 10px;
     }
@@ -1096,11 +1188,16 @@ export class LwAiSearch extends LitElement {
     .bar-fixed {
       display: flex;
       align-items: center;
-      justify-content: center;
+      /* "safe": centred while it fits, starting from the left (and scrollable)
+         once it does not, instead of being cut off at both ends */
+      justify-content: safe center;
       gap: 10px;
       min-width: 0;
-      overflow: hidden;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: none;
     }
+    .bar-fixed::-webkit-scrollbar { display: none; }
 
     /* state 3: every question, scrolling past continuously. The track
        holds the list twice so the reset at -50% is seamless. */
@@ -1156,40 +1253,47 @@ export class LwAiSearch extends LitElement {
     }
 
     /* ── Phones ──
-       There is no room to seat a row of questions beside the CTA, so the
-       icons stack into a narrow column, a single question takes the space
-       between them and the CTA, and it wraps onto a second line rather
-       than being clipped. */
+       Two lines. Above: two questions side by side, each in its own
+       rounded box, with the rest a swipe away. Below: the collapse arrow at
+       the left and the CTA in the middle of the row. */
     @media (max-width: 560px) {
       .bar {
-        gap: 8px;
-        padding: 8px 10px 10px;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        grid-template-areas:
+          "questions questions questions"
+          "arrow     cta       .";
+        align-items: center;
+        gap: 6px 0;
+        padding: 12px 12px 8px;
         min-height: 0;
-        /* the questions take the first line, the CTA the one below */
-        flex-wrap: wrap;
       }
 
-      /* The mode switcher is hidden on phones; the bar just shows the
-         first question beside the CTA. */
-      .bar-modes { display: none; }
+      .bar-body { grid-area: questions; padding: 0; min-width: 0; }
+      .bar-collapse { grid-area: arrow; justify-self: start; padding: 4px; }
+      .bar > .cta {
+        grid-area: cta;
+        justify-self: center;
+        padding: 8px 12px;
+        font-size: 15px;
+      }
+      .bar > .cta svg { width: 16px; height: 16px; }
+      .bar-collapse svg { width: 42px; height: 42px; margin: -8px; }
 
-      .bar-body { flex-basis: 100%; padding: 0; }
-
-      /* Every question sits in one row the visitor swipes through, a
-         question at a time; the next one peeks in at the edge. */
+      /* Two questions fill the row; swiping moves a pair along, one
+         question at a time. */
       .bar-fixed {
         flex: 1 1 auto;
         justify-content: flex-start;
         /* every pill as tall as the tallest one in the row */
         align-items: stretch;
+        gap: 10px;
         overflow-x: auto;
         overflow-y: hidden;
         scroll-snap-type: x mandatory;
         overscroll-behavior-x: contain;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
-        -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 20px), transparent);
-                mask-image: linear-gradient(90deg, #000 calc(100% - 20px), transparent);
       }
       .bar-fixed::-webkit-scrollbar { display: none; }
 
@@ -1199,16 +1303,18 @@ export class LwAiSearch extends LitElement {
         white-space: normal;
         overflow: visible;
         text-overflow: clip;
-        width: min(190px, 56vw);
-        /* Always two lines tall, so a short question that fits on one
-           still matches its neighbours. */
+        flex: 0 0 calc((100% - 10px) / 2);
+        width: calc((100% - 10px) / 2);
         box-sizing: border-box;
-        min-height: calc(2 * 1.25em + 18px);
+        /* Always two lines tall, so a short question that fits on one
+           still matches its neighbour. */
+        min-height: calc(2 * 1.25em + 22px);
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        padding: 8px 12px;
-        font-size: 11.5px;
+        padding: 10px 12px;
+        border-radius: var(--lw-ai-corner-radius, 14px);
+        font-size: 14px;
         line-height: 1.25;
         text-align: center;
         scroll-snap-align: start;
@@ -1217,16 +1323,7 @@ export class LwAiSearch extends LitElement {
       /* 16px, or iOS zooms the page in on focus (see the modal field). */
       .bar-form input { font-size: 16px; }
 
-      .bar > .cta {
-        flex-basis: 100%;
-        max-width: none;
-        padding: 10px 12px;
-        font-size: 13px;
-      }
-      .bar > .cta svg { width: 13px; height: 13px; }
-
-      .bar-toggle { right: 14px; padding: 5px 9px 4px; }
-      .bar-toggle svg { width: 17px; height: 17px; }
+      .bar-wrap { --box: var(--lw-ask-bar-restore-size, 52px); }
     }
 
     /* ── Inline mode: btn-type="normal" ──
@@ -2495,6 +2592,23 @@ export class LwAiSearch extends LitElement {
       <line x1="3" y1="13" x2="17" y2="13"/>
     </svg>`;
 
+  // Collapse arrow at the left end of the bar (down and to the left, toward
+  // the corner the strip shrinks into), and the sparkle that marks the little
+  // box it leaves behind. Drawn in currentColor, so the bar's icon colour
+  // (orange by default) paints them.
+  static collapseIcon = html`
+    <svg viewBox="0 0 49 49" fill="none" stroke="currentColor" stroke-width="3.03389"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M30.3168 31.9511L16.1939 30.4007L18.1062 16.3222"/>
+      <path d="M32.2277 17.8714L16.1925 30.3995"/>
+    </svg>`;
+
+  static miniSparkleIcon = html`
+    <svg viewBox="0 0 37 37" fill="none" stroke="currentColor" stroke-linejoin="round" aria-hidden="true">
+      <path stroke-width="3.00505" d="M14.7248 34.9444C17.3692 26.8392 20.2913 23.9149 27.947 21.7222C20.2913 19.5295 17.3692 16.6052 14.7248 8.5C12.0803 16.6052 9.15823 19.5295 1.50256 21.7222C9.15823 23.9149 12.0803 26.8392 14.7248 34.9444Z"/>
+      <path stroke-width="1.88889" d="M29.8359 12.2777C30.9692 8.804 32.2215 7.55072 35.5025 6.611C32.2215 5.67128 30.9692 4.418 29.8359 0.944336C28.7025 4.418 27.4502 5.67128 24.1692 6.611C27.4502 7.55072 28.7025 8.804 29.8359 12.2777Z"/>
+    </svg>`;
+
   // Minimize / restore glyphs for the bar's corner tab.
   static minimizeIcon = html`
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -3099,16 +3213,14 @@ export class LwAiSearch extends LitElement {
   }
 
   /**
-   * Active bar state: 'search', 'questions' (the fixed four) or 'scroll'
-   * (every question, moving). The visitor's choice wins once they press
-   * an icon; before that the tag's bar-mode seeds it, defaulting to the
-   * fixed four.
+   * The bar shows the suggested questions, always. Its search and
+   * scroll modes (and the icons that switched between them) are still in
+   * the code but hidden, so neither the visitor nor the bar-mode attribute
+   * can reach them; to bring them back, return the old choice here and
+   * remove the display:none on .bar-modes.
    */
   get _activeBarMode() {
-    // No switcher on phones: always the swipeable row of questions.
-    if (this._isPhone) return 'questions';
-    const chosen = String(this._barMode || this.barMode || '').trim().toLowerCase();
-    return LwAiSearch.barModes.includes(chosen) ? chosen : 'questions';
+    return 'questions';
   }
 
   _setBarMode(mode) {
@@ -3311,7 +3423,7 @@ export class LwAiSearch extends LitElement {
     // height as well left a blank band under the footer. While the search
     // is open the strip is hidden and the height is zero.
     const height = !inBar ? 0 : Math.ceil(
-      visible(bar) ? bar.getBoundingClientRect().height : 0);
+      visible(bar) && !this._barMinimized ? bar.getBoundingClientRect().height : 0);
 
     if (!height) {
       // Nothing is on screen to clear, so the page gets its own padding
@@ -4903,27 +5015,33 @@ export class LwAiSearch extends LitElement {
 
     return html`
       <div class="bar-wrap ${minimized ? 'is-minimized' : ''}">
-        <button class="bar-toggle"
-                aria-expanded=${minimized ? 'false' : 'true'}
-                aria-label=${minimized ? 'Show suggestions' : 'Hide suggestions'}
-                title=${minimized ? 'Show suggestions' : 'Hide suggestions'}
-                @click=${this._toggleBarMinimized}>
-          ${minimized ? LwAiSearch.restoreIcon : LwAiSearch.minimizeIcon}
-        </button>
+        <div class="bar">
+          <button class="bar-collapse"
+                  aria-expanded=${minimized ? 'false' : 'true'}
+                  aria-label="Hide suggestions"
+                  title="Hide suggestions"
+                  @click=${this._toggleBarMinimized}>${LwAiSearch.collapseIcon}</button>
 
-      <div class="bar">
-        <div class="bar-modes" role="group" aria-label="Suggestion display">
-          ${modeButton('search', LwAiSearch.searchIcon, 'Search')}
-          ${modeButton('questions', LwAiSearch.gridIcon, 'Suggested questions')}
-          ${modeButton('scroll', LwAiSearch.listIcon, 'All questions')}
+          <div class="bar-modes" role="group" aria-label="Suggestion display">
+            ${modeButton('search', LwAiSearch.searchIcon, 'Search')}
+            ${modeButton('questions', LwAiSearch.gridIcon, 'Suggested questions')}
+            ${modeButton('scroll', LwAiSearch.listIcon, 'All questions')}
+          </div>
+
+          <span class="bar-divider" aria-hidden="true"></span>
+
+          ${this._renderBarBody(mode)}
+
+          ${cta}
         </div>
 
-        <span class="bar-divider" aria-hidden="true"></span>
-
-        ${this._renderBarBody(mode)}
-
-        ${cta}
-      </div>
+        <!-- The little box the strip shrinks into; hidden while it is open. -->
+        <button class="bar-restore"
+                aria-expanded=${minimized ? 'false' : 'true'}
+                aria-label="Show suggestions"
+                title="Show suggestions"
+                tabindex=${minimized ? '0' : '-1'}
+                @click=${this._toggleBarMinimized}>${LwAiSearch.miniSparkleIcon}</button>
       </div>`;
   }
 

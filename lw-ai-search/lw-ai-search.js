@@ -2517,7 +2517,7 @@ export class LwAiSearch extends LitElement {
     this._backendQuestions = [];
     this._backendCitationsStyle = null;
     this.promptType = null;
-    this.overviewHeading = 'AI Answer';
+    this.overviewHeading = 'AI Response';
     this.overviewCitations = 'none';
     this.overviewParagraphs = [];
     this.modalTop = '';
@@ -4479,7 +4479,7 @@ export class LwAiSearch extends LitElement {
                 .typewriter=${true}
                 @citation-click=${this._onCitationClick}
               ></lw-blog-overview>
-              <h3 class="further-reading">Further Reading</h3>` : ''}
+              <h3 class="further-reading">Related Articles</h3>` : ''}
 
             <div class="result-list">
               ${this._results.length ? html`

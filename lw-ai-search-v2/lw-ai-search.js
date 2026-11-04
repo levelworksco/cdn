@@ -2721,7 +2721,7 @@ export class LwAiSearch extends LitElement {
     this._backendQuestions = [];
     this._backendCitationsStyle = null;
     this.promptType = null;
-    this.overviewHeading = 'AI Answer';
+    this.overviewHeading = 'AI Response';
     this.answerAnimation = 'fadeIn';
     this.answerAnimationSep = 'word';
     this.answerAnimationDuration = '0.6s';
@@ -4207,7 +4207,7 @@ export class LwAiSearch extends LitElement {
         body: JSON.stringify({
           query,
           filter: {},
-          limit: 5,
+          limit: 4,
           page: 1,
           semanticRatio: Number(this.semanticRatio),
         }),
@@ -4826,7 +4826,7 @@ export class LwAiSearch extends LitElement {
                 @citation-click=${this._onCitationClick}
               ></lw-blog-overview>` : ''}
 
-            ${this._productsToShow.length ? html`
+            ${(this._productsToShow.length || !this._noResults) ? html`
               <lw-recommended-products
                 class="modal-products"
                 heading=${this.productsHeading}
@@ -4834,12 +4834,13 @@ export class LwAiSearch extends LitElement {
                 show-price=${this.productsShowPrice}
                 show-add-to-cart=${this.productsShowCart}
                 show-count=${this.productsShowCount}
+                empty-message=${this._noResultsMsg}
                 .products=${this._productsToShow}
                 @product-click=${this._onProductClick}
               ></lw-recommended-products>` : ''}
 
             ${this._overview.length ? html`
-              <h3 class="further-reading">Further Reading</h3>` : ''}
+              <h3 class="further-reading">Recommended Articles</h3>` : ''}
 
             <div class="result-list">
               ${this._results.length ? html`

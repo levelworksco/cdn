@@ -4615,7 +4615,7 @@ export class LwAiSearch extends LitElement {
               ></lw-recommended-products>` : ''}
 
             ${this._overview.length ? html`
-              <h3 class="further-reading">Recommended Articles</h3>` : ''}
+              <h3 class="further-reading">Recommended Blogs</h3>` : ''}
 
             <div class="result-list">
               ${this._results.length ? html`

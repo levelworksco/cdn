@@ -66,6 +66,9 @@ export class LwRecommendedProducts extends LitElement {
       color: #3c3c3c;
       -webkit-font-smoothing: antialiased;
       --gap: 16px;
+      /* Its arrows sit above the cards; contained here, they cannot also float
+         above a sticky search box when the row scrolls underneath it. */
+      isolation: isolate;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -192,7 +195,10 @@ export class LwRecommendedProducts extends LitElement {
     .arrow {
       appearance: none;
       position: absolute;
-      top: calc(50% - 20px);
+      /* Level with the middle of the product image, not of the whole card:
+         the text below the image makes cards tall, and an arrow halfway
+         down that sits low. --arrow-top is measured in _syncArrowTop. */
+      top: calc(var(--arrow-top, 50%) - 18px);
       z-index: 2;
       width: 36px;
       height: 36px;
@@ -205,17 +211,32 @@ export class LwRecommendedProducts extends LitElement {
       color: #1a1a1a;
       box-shadow: 0 2px 10px rgba(16, 18, 27, 0.22);
       cursor: pointer;
-      transition: opacity 0.15s, transform 0.15s;
+      transition: opacity 0.28s ease, transform 0.28s ease, visibility 0s;
     }
     .arrow:hover { transform: scale(1.06); }
     .arrow svg { width: 18px; height: 18px; }
-    .arrow.prev { left: -10px; }
-    .arrow.next { right: -10px; }
-    .arrow[hidden] { display: none; }
+    /* Centred on the card edge: half the circle over the card, half beside it. */
+    .arrow.prev { left: -18px; }
+    .arrow.next { right: -18px; }
+    /* Fades and shrinks away at the ends of the row, rather than blinking out. */
+    .arrow.is-off {
+      opacity: 0;
+      transform: scale(0.7);
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.28s ease, transform 0.28s ease, visibility 0s linear 0.28s;
+    }
+    @media (max-width: 560px) {
+      .arrow { width: 32px; height: 32px; top: calc(var(--arrow-top, 50%) - 16px); }
+      .arrow svg { width: 16px; height: 16px; }
+      .arrow.prev { left: -16px; }
+      .arrow.next { right: -16px; }
+    }
     .arrow:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 
     @media (prefers-reduced-motion: reduce) {
       .track { scroll-behavior: auto; }
+      .arrow, .arrow.is-off { transition: none; }
     }
   `;
 
@@ -258,6 +279,7 @@ export class LwRecommendedProducts extends LitElement {
     if (changed.has('products') || changed.has('perRow') || changed.has('_cols')) {
       this._syncArrows();
     }
+    this._syncArrowTop();
   }
 
   /** As many cards per row as the width allows, up to `per-row`. */
@@ -268,6 +290,8 @@ export class LwRecommendedProducts extends LitElement {
     const fit = Math.floor((width + GAP) / (MIN_CARD_WIDTH + GAP));
     const cols = Math.max(1, Math.min(max, fit));
     if (cols !== this._cols) this._cols = cols;
+    // The card, and so its image, is as wide as the space gives it.
+    this._syncArrowTop();
   }
 
   get _isSlider() {
@@ -276,6 +300,15 @@ export class LwRecommendedProducts extends LitElement {
 
   get _track() {
     return this.renderRoot?.querySelector('.track');
+  }
+
+  /** Put the arrows level with the middle of the image (the track's top padding is 4px). */
+  _syncArrowTop() {
+    const media = this.renderRoot?.querySelector('.media');
+    const viewport = this.renderRoot?.querySelector('.viewport');
+    if (!media || !viewport) return;
+    const height = media.getBoundingClientRect().height;
+    if (height) viewport.style.setProperty('--arrow-top', `${4 + height / 2}px`);
   }
 
   _syncArrows() {
@@ -368,8 +401,8 @@ export class LwRecommendedProducts extends LitElement {
     return html`
       ${this.heading ? html`<h3>${this.heading}</h3>` : nothing}
       <div class="viewport">
-        <button class="arrow prev" aria-label="Previous products"
-                ?hidden=${!slider || this._atStart}
+        <button class="arrow prev ${!slider || this._atStart ? 'is-off' : ''}" aria-label="Previous products"
+                tabindex=${!slider || this._atStart ? '-1' : '0'}
                 @click=${() => this._page(-1)}>${chevron('M15 5l-7 7 7 7')}</button>
         <div class="track" style="--cols:${this._cols}"
              role=${slider ? 'region' : nothing}
@@ -377,8 +410,8 @@ export class LwRecommendedProducts extends LitElement {
              @scroll=${this._syncArrows}>
           ${products.map(product => this._renderCard(product))}
         </div>
-        <button class="arrow next" aria-label="Next products"
-                ?hidden=${!slider || this._atEnd}
+        <button class="arrow next ${!slider || this._atEnd ? 'is-off' : ''}" aria-label="Next products"
+                tabindex=${!slider || this._atEnd ? '-1' : '0'}
                 @click=${() => this._page(1)}>${chevron('M9 5l7 7-7 7')}</button>
       </div>
       ${this.showCount

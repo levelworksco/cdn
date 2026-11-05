@@ -114,6 +114,7 @@ function mergeTheme(base, override) {
 const BACKEND_THEME_MAP = {
   WidgetStyle: ['widget', 'style'],
   WidgetPosition: ['widget', 'position'],
+  DefaultSearchStyle: ['widget', 'defaultSearchStyle'],
   HelperText: ['widget', 'helperText'],
   WidgetBackgroundColor: ['widget', 'backgroundColor'],
   WidgetIconColor: ['widget', 'iconColor'],
@@ -3054,13 +3055,17 @@ export class LwAiSearch extends LitElement {
   /**
    * Active bar state: 'search', 'questions' (the fixed four) or 'scroll'
    * (every question, moving). The visitor's choice wins once they press
-   * an icon; before that the tag's bar-mode seeds it, defaulting to the
+   * an icon; before that the tag's bar-mode seeds it, then the Default Search Style set
+   * in the admin panel (the styling config's DefaultSearchStyle), defaulting to the
    * fixed four.
    */
   get _activeBarMode() {
     // No switcher on phones: always the swipeable row of questions.
     if (this._isPhone) return 'questions';
-    const chosen = String(this._barMode || this.barMode || '').trim().toLowerCase();
+    const configured = this._resolvedTheme.widget?.defaultSearchStyle;
+    const chosen = String(this._barMode || this.barMode || configured || '')
+      .trim()
+      .toLowerCase();
     return LwAiSearch.barModes.includes(chosen) ? chosen : 'questions';
   }
 

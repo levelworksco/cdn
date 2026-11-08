@@ -2705,7 +2705,7 @@ export class LwAiSearch extends LitElement {
     // on the tag to the products index's own key.
     this.productsSearchKey = '';
     this.productsHeading = 'Recommended Products';
-    this.productsShowDescription = 'true';
+    this.productsShowDescription = 'false';
     this.productsShowPrice = 'true';
     this.productsShowCart = 'true';
     this.productsShowCount = 'true';
@@ -4848,7 +4848,7 @@ export class LwAiSearch extends LitElement {
               ></lw-recommended-products>` : ''}
 
             ${this._overview.length ? html`
-              <h3 class="further-reading">Recommended Blogs</h3>` : ''}
+              <h3 class="further-reading">Related Blogs</h3>` : ''}
 
             <div class="result-list">
               ${this._results.length ? html`

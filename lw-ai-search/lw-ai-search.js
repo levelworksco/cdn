@@ -4484,7 +4484,7 @@ export class LwAiSearch extends LitElement {
                 .typewriter=${true}
                 @citation-click=${this._onCitationClick}
               ></lw-blog-overview>
-              <h3 class="further-reading">Recommended Blogs</h3>` : ''}
+              <h3 class="further-reading">Related Blogs</h3>` : ''}
 
             <div class="result-list">
               ${this._results.length ? html`

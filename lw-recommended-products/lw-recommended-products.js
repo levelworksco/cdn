@@ -39,6 +39,13 @@ const flag = {
   toAttribute: value => (value ? 'true' : 'false'),
 };
 
+// ISO currency codes shown as a symbol before the amount; any other code is
+// shown as the code itself before the amount ("CHF 10.0").
+const CURRENCY_SYMBOLS = {
+  USD: '$', EUR: '€', GBP: '£', INR: '₹', JPY: '¥', CNY: '¥',
+  AUD: 'A$', CAD: 'C$', NZD: 'NZ$', SGD: 'S$', HKD: 'HK$',
+};
+
 const MIN_CARD_WIDTH = 150;   // px — fewer cards per row below this
 const GAP = 16;               // px — keep in step with --gap in the styles
 
@@ -337,8 +344,20 @@ export class LwRecommendedProducts extends LitElement {
       const max = price.max != null ? this._formatPrice(price.max) : '';
       return min || max || '';
     }
-    // Already text such as "Rs. 10" or "$12.00": shown as it came.
-    if (typeof price === 'string' && /[^\d.,\s]/.test(price)) return price;
+    if (typeof price === 'string') {
+      // The products index sends "10.0 USD" (amount, then ISO code). Show the
+      // currency first, as its symbol where there is one: "$10.0".
+      const after  = price.match(/^\s*(\d[\d.,]*)\s*([A-Za-z]{3})\s*$/);   // "10.0 USD"
+      const before = price.match(/^\s*([A-Za-z]{3})\s*(\d[\d.,]*)\s*$/);   // "USD 10.0"
+      const amount = after ? after[1] : before ? before[2] : '';
+      const code   = (after ? after[2] : before ? before[1] : '').toUpperCase();
+      if (amount) {
+        const symbol = CURRENCY_SYMBOLS[code];
+        return symbol ? `${symbol}${amount}` : `${code} ${amount}`;
+      }
+      // Already text such as "Rs. 10" or "$12.00": shown as it came.
+      if (/[^\d.,\s]/.test(price)) return price;
+    }
     const value = Number(String(price).replace(/,/g, ''));
     if (Number.isNaN(value)) return String(price);
     const text = Number.isInteger(value) ? String(value) : value.toFixed(2);

@@ -422,9 +422,14 @@ export class LwBlogOverview extends LitElement {
           const article = JSON.parse(el.dataset.article);
           this._attachHoverCard(el, [article]);
         });
+      } else if (mode === 'link') {
+        // The icon still links to the top source on click; hovering it shows
+        // that same source as a blog card (title, excerpt, image).
+        this.shadowRoot.querySelectorAll('.citation-link[data-article]').forEach(el => {
+          const article = JSON.parse(el.dataset.article);
+          if (article?.title) this._attachHoverCard(el, [article]);
+        });
       }
-      // 'link' mode is deliberately inert — the icon is a plain link to the
-      // top source, with no hover card.
     }
   }
 
@@ -554,8 +559,8 @@ export class LwBlogOverview extends LitElement {
       })}`;
     }
 
-    // Link mode is a single anchor to the top-ranked source — no hover card,
-    // it only acts on click.
+    // Link mode is a single anchor to the top-ranked source; hovering it shows
+    // that source's blog card (attached in updated()), clicking opens it.
     if (mode === 'link') {
       // `||` not `??` — an article can carry url: '', which must still fall
       // back rather than render a broken/empty href.
@@ -564,10 +569,10 @@ export class LwBlogOverview extends LitElement {
       return html`
         <a
           class="citation-link"
+          data-article=${JSON.stringify(top)}
           href=${top.url || '#'}
           target=${external ? '_blank' : nothing}
           rel=${external ? 'noopener noreferrer' : nothing}
-          title=${top.title ? `Source: ${top.title}` : 'View source'}
           aria-label=${`Source: ${top.title || 'view article'}`}
           @click=${e => this._onCitationLinkClick(e, top)}
         >

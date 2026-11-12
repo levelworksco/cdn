@@ -2853,6 +2853,22 @@ export class LwAiSearch extends LitElement {
     return max ? this._results.slice(0, max) : this._results;
   }
 
+  /**
+   * Widget Styling Config › displayOverview / displayProducts / displayBlogs 
+   */
+  _displaySection(camel, pascal) {
+    const raw = this._backendTheme?.[camel] ?? this._backendTheme?.[pascal];
+    // Shown by default: only an explicit `false` hides the section, so an
+    // unset/missing value keeps it visible.
+    return raw !== false;
+  }
+
+  get _displayOverview() { return this._displaySection('displayOverview', 'DisplayOverview'); }
+
+  get _displayProducts() { return this._displaySection('displayProducts', 'DisplayProducts'); }
+
+  get _displayBlogs() { return this._displaySection('displayBlogs', 'DisplayBlogs'); }
+
   get _suggestedQuestions() {
     // Backend-managed queries win; the theme items remain the fallback
     // for when none are configured or the request fails.
@@ -4821,7 +4837,7 @@ export class LwAiSearch extends LitElement {
               <span class="metaTime">${this._metaTime}</span>
             </div>
 
-            ${this._overview.length ? html`
+            ${this._displayOverview && this._overview.length ? html`
               <lw-blog-overview
                 class="modal-overview"
                 heading=${this.overviewHeading}
@@ -4834,7 +4850,7 @@ export class LwAiSearch extends LitElement {
                 @citation-click=${this._onCitationClick}
               ></lw-blog-overview>` : ''}
 
-            ${(this._productsToShow.length || !this._noResults) ? html`
+            ${this._displayProducts && (this._productsToShow.length || !this._noResults) ? html`
               <lw-recommended-products
                 class="modal-products"
                 heading=${this.productsHeading}
@@ -4847,23 +4863,26 @@ export class LwAiSearch extends LitElement {
                 @product-click=${this._onProductClick}
               ></lw-recommended-products>` : ''}
 
-            ${this._overview.length ? html`
-              <h3 class="further-reading">Related Blogs</h3>` : ''}
+            ${this._displayBlogs ? html`
+              <div class="modal-blogs">
+                ${this._overview.length ? html`
+                  <h3 class="further-reading">Related Blogs</h3>` : ''}
 
-            <div class="result-list">
-              ${this._results.length ? html`
-                <lw-blog-list
-                  container-background="transparent"
-                  default-view="list"
-                  default-sort="default"
-                  hide-header
-                  .autoLoad=${false}
-                  .posts=${this._furtherReadingResults.map(item => this._toPost(item))}
-                  .totalCount=${this._furtherReadingResults.length}
-                  @post-click=${this._onPostClick}
-                ></lw-blog-list>
-              ` : ''}
-            </div>
+                <div class="result-list">
+                  ${this._results.length ? html`
+                    <lw-blog-list
+                      container-background="transparent"
+                      default-view="list"
+                      default-sort="default"
+                      hide-header
+                      .autoLoad=${false}
+                      .posts=${this._furtherReadingResults.map(item => this._toPost(item))}
+                      .totalCount=${this._furtherReadingResults.length}
+                      @post-click=${this._onPostClick}
+                    ></lw-blog-list>
+                  ` : ''}
+                </div>
+              </div>` : ''}
             <div class="modal-empty ${this._noResults && this._resultsReady ? '' : 'is-hidden'}">
               ${this._noResultsMsg}
             </div>

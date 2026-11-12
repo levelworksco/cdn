@@ -1,6 +1,7 @@
-import { LitElement, html, css, repeat }
+import { LitElement, html, css, repeat, nothing }
   from 'https://cdn.jsdelivr.net/gh/lit/dist@3/all/lit-all.min.js';
 import '../lw-blog-list-item/lw-blog-list-item.js';
+import { flowStyles, flowName } from '../lw-flow/lw-flow.js';
 
 const PAGE_LIMIT = 20;
 
@@ -123,6 +124,10 @@ export class LwBlogList extends LitElement {
     // a result count of its own pre-fetched, single-batch hits.
     hideHeader: { type: Boolean, attribute: 'hide-header', reflect: true },
 
+    // Bring the cards in one after another with one of lw-flow's effects
+    // ('fadeIn', 'slideUp', …). Empty: the item's own short fade only.
+    animation: { type: String },
+
     // API configuration
     baseUrl:   { attribute: 'base-url'   },
     apiKey:    { attribute: 'api-key'    },
@@ -213,6 +218,7 @@ export class LwBlogList extends LitElement {
   constructor() {
     super();
     this.posts           = [];
+    this.animation       = '';
     this._categories     = [];
     this.loading         = false;
     this.totalCount      = 0;
@@ -524,7 +530,7 @@ export class LwBlogList extends LitElement {
       </svg>`;
   }
 
-  static styles = css`
+  static styles = [flowStyles, css`
     :host {
       display: block;
       width: 100%;
@@ -918,10 +924,11 @@ export class LwBlogList extends LitElement {
       .pl-header { gap: 0.5rem; }
       .pl-header-right { gap: 0.3rem; }
     }
-  `;
+  `];
 
   render() {
     const isGrid = this._view === 'grid';
+    const flow = flowName(this.animation);
     const sorted = this._activeCategory === 'all'
       ? this._sortedPosts
       : this._sortedPosts.filter(p => p.category === this._activeCategory);
@@ -940,8 +947,8 @@ export class LwBlogList extends LitElement {
         : repeat(
             sorted,
             post => post.id,
-            post => html`
-              <lw-blog-list-item .post=${{ ...post, postType: this._categories.length > 2 ? post.postType : '' }} .view=${this._view} @post-click=${this._onPostClick}></lw-blog-list-item>
+            (post, i) => html`
+              <lw-blog-list-item class=${flow ? `fc ${flow}` : ''} style=${flow ? `--i:${i}` : nothing} .post=${{ ...post, postType: this._categories.length > 2 ? post.postType : '' }} .view=${this._view} @post-click=${this._onPostClick}></lw-blog-list-item>
             `
           );
 

@@ -378,6 +378,7 @@ function loadGoogleFont(value) {
 }
 import '../lw-blog-overview/lw-blog-overview.js';
 import '../lw-recommended-products/lw-recommended-products.js';
+import { flowStyles, flowName, flowWords } from '../lw-flow/lw-flow.js';
 
 // ─────────────────────────────────────────────────────────────
 // COMPONENT: <lw-ai-search>
@@ -670,6 +671,12 @@ export class LwAiSearch extends LitElement {
     // Per-section overview + citations from the non-streaming /summary
     // endpoint (see _fetchSummary / _mapAnswerToParagraphs).
     _summaryParagraphs: { state: true },
+    // Staging of the results (see _fetchSummaryStream): the answer is complete,
+    // the products and blogs may now come in, and whether they came in while the
+    // answer was still loading (the 3-second rule).
+    _overviewDone: { state: true },
+    _stageSecondary: { state: true },
+    _earlyOpened: { state: true },
     _backendTheme: { state: true },
     _themeSettled: { state: true },
     _backendQuestions: { state: true },
@@ -691,7 +698,7 @@ export class LwAiSearch extends LitElement {
   // Page size for each search request.
   static pageLimit = 20;
 
-  static styles = css`
+  static styles = [flowStyles, css`
     :host {
       position: fixed;
       /* --lw-ask-panel-inset is set while the right panel is open, so this
@@ -2443,6 +2450,21 @@ export class LwAiSearch extends LitElement {
     }
     #ai-search-overlay.as-panel .modal-overview { --lw-overview-heading-size: 15px; }
 
+    /* The answer's slot while it is still being written, when the products and
+       blogs have already come in (see _fetchSummaryStream). Heading as the answer
+       will have it, then the same pulsing bars as the main loader. */
+    .overview-pending { display: flex; flex-direction: column; gap: 18px; margin-bottom: 30px; }
+    .overview-pending .pending-heading {
+      margin: 0 0 2px;
+      font-size: 24px;
+      font-weight: 700;
+      font-family: var(--lw-ai-results-heading-font, 'Inter', sans-serif);
+      color: var(--lw-ai-results-heading-color, #1a1a1a);
+    }
+    #ai-search-overlay.as-panel .overview-pending .pending-heading { font-size: 15px; }
+    .overview-pending .pending-msg { margin: 0; font-size: 16px; line-height: 1.6; color: #6b6b6b; }
+    #ai-search-overlay.as-panel .overview-pending .pending-msg { font-size: 14px; }
+
     .further-reading {
       margin: 26px 0 12px;
       font-size: 24px;
@@ -2559,7 +2581,7 @@ export class LwAiSearch extends LitElement {
         transition-delay: 0ms;
       }
     }
-  `;
+  `];
 
   // "Powered by Levelworks" lockup (see powered-by.svg). Stacked on the full
   // page; in the panel and on phones the words slide down beside the logo so
@@ -2810,6 +2832,10 @@ export class LwAiSearch extends LitElement {
     this._streamGateElapsed = false;  // true once the STREAM_HITS_GATE_MS cap fires
     this._streamGateTimer = null;
     this._streamGateCtrl = null;      // the AbortController the gate belongs to
+    this._overviewDone = false;       // the answer stream has finished (or failed)
+    this._stageSecondary = false;     // products + blogs may be on screen
+    this._earlyOpened = false;        // ...because the answer took over 3s
+    this._stageSafetyTimer = null;
     // non-reactive search state
     this._page = 1;
     this._hasMore = true;
@@ -3962,6 +3988,7 @@ export class LwAiSearch extends LitElement {
     this._loading = true;
     this._noResults = false;
     this._resultsReady = false;
+    this._resetStaging();
     this._fetchSummaryStream(q);
     // Fired alongside the AI overview stream, same query, different index.
     this._fetchProducts(q);
@@ -4048,7 +4075,35 @@ export class LwAiSearch extends LitElement {
     }
   }
 
+  // Back to "nothing staged yet": the answer is pending and the products and
+  // blogs wait their turn. Called at the start of every search and on reset.
+  _resetStaging() {
+    clearTimeout(this._stageSafetyTimer);
+    this._overviewDone = false;
+    this._stageSecondary = false;
+    this._earlyOpened = false;
+  }
+
+  // The effect the answer uses, for the sections that follow it. '' = none.
+  get _flowName() {
+    return flowName(this.answerAnimation);
+  }
+
+  // Timing for a section's reveal. `delayMs` holds a section back so the one
+  // before it can finish first (the blogs follow the products).
+  _flowVars(delayMs) {
+    const duration = this.answerAnimationDuration ? `--lw-flow-duration:${this.answerAnimationDuration};` : '';
+    return `${duration}--lw-flow-base:${delayMs}ms;`;
+  }
+
+  // <lw-blog-overview> says the whole answer is on screen — now the products
+  // and blogs come in after it.
+  _onOverviewTyped() {
+    if (this._overviewDone) this._stageSecondary = true;
+  }
+
   _resetToHeroView() {
+    this._resetStaging();
     this._page = 1;
     this._loading = false;
     this._hasMore = true;
@@ -4294,6 +4349,17 @@ export class LwAiSearch extends LitElement {
     this._results = [];
     this._streamGateTimer = setTimeout(() => {
       this._streamGateElapsed = true;
+      // The 3-second rule. An answer that is still being written at this point
+      // does not hold the rest up: open the results now, with a loader in the
+      // answer's slot, and let the products and blogs animate in beneath it.
+      // (An answer that already finished is typing out; the products and blogs
+      // wait for that instead — see _onOverviewTyped.)
+      if (!this._overviewDone && this._summaryAbort === ctrl) {
+        this._earlyOpened = true;
+        this._stageSecondary = true;
+        this._resultsReady = true;
+        this._loading = false;
+      }
       this._revealStreamHits();
     }, STREAM_HITS_GATE_MS);
 
@@ -4357,7 +4423,19 @@ export class LwAiSearch extends LitElement {
         // Reading" follows the overview rather than appearing alongside it.
         // The 3s cap may have revealed them already.
         this._loading = false;
+        this._overviewDone = true;
         this._resultsReady = true;
+        // Nothing to wait for when there is no answer to type (or none is
+        // wanted); otherwise <lw-blog-overview>'s typing-end brings the products
+        // and blogs in. The timer is a net in case that event never comes.
+        if (!this._displayOverview || !this._overview.length) {
+          this._stageSecondary = true;
+        } else if (!this._stageSecondary) {
+          clearTimeout(this._stageSafetyTimer);
+          this._stageSafetyTimer = setTimeout(() => {
+            if (this._summaryAbort === ctrl) this._stageSecondary = true;
+          }, 9000);
+        }
         if (!this._streamHitsShown) {
           this.updateComplete.then(() => {
             if (this._summaryAbort === ctrl) this._revealStreamHits();
@@ -4503,6 +4581,7 @@ export class LwAiSearch extends LitElement {
   }
 
   _resetSearch() {
+    this._resetStaging();
     this._page = 1;
     this._hasMore = true;
     this._loading = false;
@@ -4837,7 +4916,31 @@ export class LwAiSearch extends LitElement {
               <span class="metaTime">${this._metaTime}</span>
             </div>
 
-            ${this._displayOverview && this._overview.length ? html`
+            ${/* The order the results come in:
+                 · answer in under 3s  → the answer is written first; when it has
+                   finished, the products, then the blogs, animate in after it.
+                 · answer over 3s      → at 3s the products and blogs animate in
+                   while a loader holds the answer's place; the answer follows.
+                 Everything uses the answer's own effect (answer-animation). */ ''}
+            ${this._displayOverview && !this._overviewDone ? html`
+              <div class="overview-pending" role="status" aria-label="Generating answer">
+                <div class="pending-heading">${this.overviewHeading}</div>
+                <span class="skeleton-line"></span>
+                <span class="skeleton-line"></span>
+                <span class="skeleton-line is-short"></span>
+              </div>` : ''}
+
+            ${/* The answer failed, or came back with nothing: keep the section
+                 and say so, rather than letting the loader vanish and leave the
+                 products under no heading. (A failure before the 3s mark shows
+                 the page's own "Something went wrong" instead — _noResults.) */ ''}
+            ${this._displayOverview && this._overviewDone && !this._overview.length && !this._noResults ? html`
+              <div class="overview-pending is-empty" role="status">
+                <div class="pending-heading">${this.overviewHeading}</div>
+                <p class="pending-msg">Sorry, we couldn't generate an AI response for this search right now. Please try again.</p>
+              </div>` : ''}
+
+            ${this._displayOverview && this._overviewDone && this._overview.length ? html`
               <lw-blog-overview
                 class="modal-overview"
                 heading=${this.overviewHeading}
@@ -4847,26 +4950,30 @@ export class LwAiSearch extends LitElement {
                 .animation=${this.answerAnimation === 'none' ? '' : this.answerAnimation}
                 .sep=${this.answerAnimationSep}
                 .animationDuration=${this.answerAnimationDuration}
+                .animateHeading=${!this._earlyOpened}
+                @typing-end=${this._onOverviewTyped}
                 @citation-click=${this._onCitationClick}
               ></lw-blog-overview>` : ''}
 
-            ${this._displayProducts && (this._productsToShow.length || !this._noResults) ? html`
+            ${this._stageSecondary && this._displayProducts && (this._productsToShow.length || !this._noResults) ? html`
               <lw-recommended-products
                 class="modal-products"
+                style=${this._flowVars(0)}
                 heading=${this.productsHeading}
                 show-description=${this.productsShowDescription}
                 show-price=${this.productsShowPrice}
                 show-add-to-cart=${this.productsShowCart}
                 show-count=${this.productsShowCount}
                 empty-message=${this._noResultsMsg}
+                .animation=${this._flowName}
                 .products=${this._productsToShow}
                 @product-click=${this._onProductClick}
               ></lw-recommended-products>` : ''}
 
-            ${this._displayBlogs ? html`
-              <div class="modal-blogs">
-                ${this._overview.length ? html`
-                  <h3 class="further-reading">Related Blogs</h3>` : ''}
+            ${this._stageSecondary && this._displayBlogs ? html`
+              <div class="modal-blogs" style=${this._flowVars(this._displayProducts ? 450 : 0)}>
+                ${this._overview.length || (this._displayOverview && !this._overviewDone) ? html`
+                  <h3 class="further-reading">${flowWords('Related Blogs', this._flowName)}</h3>` : ''}
 
                 <div class="result-list">
                   ${this._results.length ? html`
@@ -4875,6 +4982,7 @@ export class LwAiSearch extends LitElement {
                       default-view="list"
                       default-sort="default"
                       hide-header
+                      .animation=${this._flowName}
                       .autoLoad=${false}
                       .posts=${this._furtherReadingResults.map(item => this._toPost(item))}
                       .totalCount=${this._furtherReadingResults.length}

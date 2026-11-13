@@ -602,6 +602,9 @@ export class LwAiSearch extends LitElement {
     answerAnimation: { type: String, attribute: 'answer-animation' },
     answerAnimationSep: { type: String, attribute: 'answer-animation-sep' },       // 'word' | 'char'
     answerAnimationDuration: { type: String, attribute: 'answer-animation-duration' },
+    // How fast the AI answer types out, as a multiple of the base pace (2 = twice
+    // as fast). Applies to the answer only; the products and blogs keep their own.
+    answerSpeed: { type: Number, attribute: 'answer-speed' },
     overviewCitations: { type: String, attribute: 'overview-citations' },
     overviewParagraphs: { type: Array, attribute: 'overview-paragraphs' },
     modalTop: { type: String, attribute: 'modal-top' },
@@ -2747,7 +2750,8 @@ export class LwAiSearch extends LitElement {
     this.overviewHeading = 'AI Response';
     this.answerAnimation = 'fadeIn';
     this.answerAnimationSep = 'word';
-    this.answerAnimationDuration = '0.6s';
+    this.answerAnimationDuration = '0.3s';   // each word's effect; was 0.6s, now twice as fast
+    this.answerSpeed = 2;
     this.overviewCitations = 'none';
     this.overviewParagraphs = [];
     this.modalTop = '';
@@ -4090,10 +4094,11 @@ export class LwAiSearch extends LitElement {
   }
 
   // Timing for a section's reveal. `delayMs` holds a section back so the one
-  // before it can finish first (the blogs follow the products).
+  // before it can finish first (the blogs follow the products). The duration is
+  // deliberately not answer-animation-duration: the AI answer runs at its own,
+  // faster pace and the products and blogs stay at the default 0.6s.
   _flowVars(delayMs) {
-    const duration = this.answerAnimationDuration ? `--lw-flow-duration:${this.answerAnimationDuration};` : '';
-    return `${duration}--lw-flow-base:${delayMs}ms;`;
+    return `--lw-flow-base:${delayMs}ms;`;
   }
 
   // <lw-blog-overview> says the whole answer is on screen — now the products
@@ -4950,6 +4955,7 @@ export class LwAiSearch extends LitElement {
                 .animation=${this.answerAnimation === 'none' ? '' : this.answerAnimation}
                 .sep=${this.answerAnimationSep}
                 .animationDuration=${this.answerAnimationDuration}
+                .typingSpeed=${this.answerSpeed}
                 .animateHeading=${!this._earlyOpened}
                 @typing-end=${this._onOverviewTyped}
                 @citation-click=${this._onCitationClick}

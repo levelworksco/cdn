@@ -1818,7 +1818,13 @@ export class LwAiSearch extends LitElement {
     /* Once a search has run the modal scrolls as a normal page. */
     #ai-search-modal.post-commit {
       display: block;
-      overflow-y: scroll;
+      /* auto, not scroll: a short answer (e.g. with the overview section
+         hidden) fits in one screen, and scroll would keep an empty
+         scrollbar on screen with nothing to scroll. The stable gutter
+         reserves the space up front, so the content does not shift
+         sideways when a long answer does bring the scrollbar in. */
+      overflow-y: auto;
+      scrollbar-gutter: stable;
     }
 
     #ai-search-close {

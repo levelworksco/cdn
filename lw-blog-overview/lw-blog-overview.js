@@ -136,6 +136,9 @@ export class LwBlogOverview extends LitElement {
     // already showed the heading (say on a loader) turns this off, so it does
     // not flash and re-animate when the answer replaces the loader.
     animateHeading: { type: Boolean, attribute: 'animate-heading' },
+    // How fast the answer is typed, as a multiple of the normal pace: 2 types it
+    // in half the time. Only matters with `typewriter`. Default 1.
+    typingSpeed: { type: Number, attribute: 'typing-speed' },
     // Reveal the answer as if it were being typed, then show the citations.
     typewriter:       { type: Boolean },
     // FlowToken-style streaming (https://github.com/Ephibbs/flowtoken): while the
@@ -353,6 +356,7 @@ export class LwBlogOverview extends LitElement {
     this.animationDuration       = '';
     this.animationTimingFunction = '';
     this.animateHeading          = true;
+    this.typingSpeed             = 1;
     this._typed          = Infinity;   // everything, until a typing run starts
     this._typedSignature  = '';
     this._typingFrame     = 0;
@@ -402,8 +406,10 @@ export class LwBlogOverview extends LitElement {
     }
 
     this._typed = 0;
-    // Brisk, but never longer than about five seconds for a long answer.
-    const perSecond = Math.max(90, total / 5);
+    // Brisk, but never longer than about five seconds for a long answer — at
+    // typing-speed 1. A higher speed scales both the pace and that cap.
+    const speed = this.typingSpeed > 0 ? this.typingSpeed : 1;
+    const perSecond = Math.max(90, total / 5) * speed;
     const start = performance.now();
     const tick = (now) => {
       const typed = Math.floor(((now - start) / 1000) * perSecond);

@@ -132,6 +132,13 @@ export class LwBlogOverview extends LitElement {
     heading:          { type: String },
     paragraphs:       { type: Array  },
     displayCitations: { type: String, attribute: 'display-citations' }, // 'none' | 'number' | 'chip' | 'link'
+    // With an animation set, the heading comes in word by word too. A host that
+    // already showed the heading (say on a loader) turns this off, so it does
+    // not flash and re-animate when the answer replaces the loader.
+    animateHeading: { type: Boolean, attribute: 'animate-heading' },
+    // How fast the answer is typed, as a multiple of the normal pace: 2 types it
+    // in half the time. Only matters with `typewriter`. Default 1.
+    typingSpeed: { type: Number, attribute: 'typing-speed' },
     // Reveal the answer as if it were being typed, then show the citations.
     typewriter:       { type: Boolean },
     // FlowToken-style streaming (https://github.com/Ephibbs/flowtoken): while the
@@ -348,6 +355,8 @@ export class LwBlogOverview extends LitElement {
     this.sep              = 'word';
     this.animationDuration       = '';
     this.animationTimingFunction = '';
+    this.animateHeading          = true;
+    this.typingSpeed             = 1;
     this._typed          = Infinity;   // everything, until a typing run starts
     this._typedSignature  = '';
     this._typingFrame     = 0;
@@ -390,19 +399,36 @@ export class LwBlogOverview extends LitElement {
     cancelAnimationFrame(this._typingFrame);
     const total = this._totalChars;
     const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    if (!total || reduced) { this._typed = Infinity; return; }
+    if (!total || reduced) {
+      this._typed = Infinity;
+      this._announceTypingEnd();
+      return;
+    }
 
     this._typed = 0;
-    // Brisk, but never longer than about five seconds for a long answer.
-    const perSecond = Math.max(90, total / 5);
+    // Brisk, but never longer than about five seconds for a long answer — at
+    // typing-speed 1. A higher speed scales both the pace and that cap.
+    const speed = this.typingSpeed > 0 ? this.typingSpeed : 1;
+    const perSecond = Math.max(90, total / 5) * speed;
     const start = performance.now();
     const tick = (now) => {
       const typed = Math.floor(((now - start) / 1000) * perSecond);
-      if (typed >= total) { this._typed = Infinity; return; }
+      if (typed >= total) { this._typed = Infinity; this._announceTypingEnd(); return; }
       this._typed = typed;
       this._typingFrame = requestAnimationFrame(tick);
     };
     this._typingFrame = requestAnimationFrame(tick);
+  }
+
+  // Tells the host the whole answer is on screen (and its citations attached),
+  // so it can bring in whatever should follow it — e.g. <lw-ai-search> reveals
+  // the products and blogs after this. Fires once per typing run.
+  _announceTypingEnd() {
+    const run = this._typedSignature;
+    this.updateComplete.then(() => {
+      if (run !== this._typedSignature) return;   // a newer answer took over
+      this.dispatchEvent(new CustomEvent('typing-end', { bubbles: true, composed: true }));
+    });
   }
 
   updated(changedProps) {
@@ -422,9 +448,14 @@ export class LwBlogOverview extends LitElement {
           const article = JSON.parse(el.dataset.article);
           this._attachHoverCard(el, [article]);
         });
+      } else if (mode === 'link') {
+        // The icon still links to the top source on click; hovering it shows
+        // that same source as a blog card (title, excerpt, image).
+        this.shadowRoot.querySelectorAll('.citation-link[data-article]').forEach(el => {
+          const article = JSON.parse(el.dataset.article);
+          if (article?.title) this._attachHoverCard(el, [article]);
+        });
       }
-      // 'link' mode is deliberately inert — the icon is a plain link to the
-      // top source, with no hover card.
     }
   }
 
@@ -554,8 +585,8 @@ export class LwBlogOverview extends LitElement {
       })}`;
     }
 
-    // Link mode is a single anchor to the top-ranked source — no hover card,
-    // it only acts on click.
+    // Link mode is a single anchor to the top-ranked source; hovering it shows
+    // that source's blog card (attached in updated()), clicking opens it.
     if (mode === 'link') {
       // `||` not `??` — an article can carry url: '', which must still fall
       // back rather than render a broken/empty href.
@@ -564,10 +595,10 @@ export class LwBlogOverview extends LitElement {
       return html`
         <a
           class="citation-link"
+          data-article=${JSON.stringify(top)}
           href=${top.url || '#'}
           target=${external ? '_blank' : nothing}
           rel=${external ? 'noopener noreferrer' : nothing}
-          title=${top.title ? `Source: ${top.title}` : 'View source'}
           aria-label=${`Source: ${top.title || 'view article'}`}
           @click=${e => this._onCitationLinkClick(e, top)}
         >
@@ -602,6 +633,19 @@ export class LwBlogOverview extends LitElement {
     return out;
   }
 
+  // The heading comes in with the same effect as the answer, a word at a time.
+  _renderHeadingWords(animation) {
+    const out = [];
+    const re = /(\S+)(\s*)/g;
+    const str = String(this.heading ?? '');
+    let m;
+    let i = 0;
+    while ((m = re.exec(str))) {
+      out.push(html`<span class="tok ${animation}" style="animation-delay:${i++ * 55}ms">${m[1]}</span>${m[2]}`);
+    }
+    return out;
+  }
+
   render() {
     const mode         = this.displayCitations ?? 'chip';
     const articleIndex = (mode === 'number') ? this._buildArticleIndex() : null;
@@ -613,7 +657,7 @@ export class LwBlogOverview extends LitElement {
 
     return html`
       <div class="container">
-        <h1>${this.heading}<svg class="ai-mark" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <h1>${flow && this.animateHeading ? this._renderHeadingWords(flow) : this.heading}<svg class="ai-mark" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           <path d="M10 3l1.9 5.1L17 10l-5.1 1.9L10 17l-1.9-5.1L3 10l5.1-1.9L10 3z"/>
           <path d="M18 14l.9 2.1L21 17l-2.1.9L18 20l-.9-2.1L15 17l2.1-.9L18 14z"/>
         </svg></h1>

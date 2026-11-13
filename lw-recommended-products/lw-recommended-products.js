@@ -1,5 +1,6 @@
 import { LitElement, html, css, nothing }
   from 'https://cdn.jsdelivr.net/gh/lit/dist@3/all/lit-all.min.js';
+import { flowStyles, flowName, flowWords } from '../lw-flow/lw-flow.js';
 
 // ─────────────────────────────────────────────────────────────
 // COMPONENT: <lw-recommended-products>
@@ -61,12 +62,15 @@ export class LwRecommendedProducts extends LitElement {
     showAddToCart:   { converter: flag, attribute: 'show-add-to-cart' },
     showCount:       { converter: flag, attribute: 'show-count' },
     emptyMessage:    { type: String, attribute: 'empty-message' },
+    // Reveal the heading word by word and the cards one after another, with one
+    // of lw-flow's effects ('fadeIn', 'slideUp', …). Empty: no animation.
+    animation:       { type: String },
     _cols:           { state: true },
     _atStart:        { state: true },
     _atEnd:          { state: true },
   };
 
-  static styles = css`
+  static styles = [flowStyles, css`
     :host {
       display: block;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
@@ -245,7 +249,7 @@ export class LwRecommendedProducts extends LitElement {
       .track { scroll-behavior: auto; }
       .arrow, .arrow.is-off { transition: none; }
     }
-  `;
+  `];
 
   constructor() {
     super();
@@ -258,6 +262,7 @@ export class LwRecommendedProducts extends LitElement {
     this.showAddToCart   = true;
     this.showCount       = true;
     this.emptyMessage    = '';
+    this.animation       = '';
     this._cols    = 4;
     this._atStart = true;
     this._atEnd   = false;
@@ -372,13 +377,14 @@ export class LwRecommendedProducts extends LitElement {
     }));
   }
 
-  _renderCard(product) {
+  _renderCard(product, index = 0) {
     const href = product.url || null;
     const open = () => this._emit('product-click', product);
     const price = this.showPrice ? this._formatPrice(product.price) : '';
+    const flow = flowName(this.animation);
 
     return html`
-      <article class="card">
+      <article class="card ${flow ? `fc ${flow}` : ''}" style=${flow ? `--i:${index}` : nothing}>
         <a class="media" href=${href ?? nothing} target=${href ? '_blank' : nothing}
            rel=${href ? 'noopener noreferrer' : nothing} tabindex="-1" aria-hidden="true"
            @click=${open}>
@@ -413,12 +419,13 @@ export class LwRecommendedProducts extends LitElement {
     }
 
     const slider = this._isSlider;
+    const flow = flowName(this.animation);
     const chevron = d => html`
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d=${d}/></svg>`;
 
     return html`
-      ${this.heading ? html`<h3>${this.heading}</h3>` : nothing}
+      ${this.heading ? html`<h3>${flowWords(this.heading, flow)}</h3>` : nothing}
       <div class="viewport">
         <button class="arrow prev ${!slider || this._atStart ? 'is-off' : ''}" aria-label="Previous products"
                 tabindex=${!slider || this._atStart ? '-1' : '0'}
@@ -427,14 +434,14 @@ export class LwRecommendedProducts extends LitElement {
              role=${slider ? 'region' : nothing}
              aria-label=${slider ? this.heading || 'Products' : nothing}
              @scroll=${this._syncArrows}>
-          ${products.map(product => this._renderCard(product))}
+          ${products.map((product, i) => this._renderCard(product, i))}
         </div>
         <button class="arrow next ${!slider || this._atEnd ? 'is-off' : ''}" aria-label="Next products"
                 tabindex=${!slider || this._atEnd ? '-1' : '0'}
                 @click=${() => this._page(1)}>${chevron('M9 5l7 7-7 7')}</button>
       </div>
       ${this.showCount
-        ? html`<p class="count" role="status">Showing ${products.length} ${products.length === 1 ? 'product' : 'products'}</p>`
+        ? html`<p class="count ${flow ? `fc ${flow}` : ''}" style=${flow ? `--i:${products.length}` : nothing} role="status">Showing ${products.length} ${products.length === 1 ? 'product' : 'products'}</p>`
         : nothing}`;
   }
 }

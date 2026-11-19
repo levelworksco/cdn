@@ -528,6 +528,23 @@ function htmlToText(raw) {
   return (doc.body.textContent || '').replace(/\s+/g, ' ').trim();
 }
 
+// The text shown under a result's title. The backend indexes articles as
+// chunks, so a hit carries `matchedPassage` (the best-matching chunk). Legacy
+// non-chunked docs still have summary/body/bodySummary. Returned as plain text
+// (htmlToText strips any markup); the 3-line limit is CSS (line-clamp), never
+// a JS truncation, since passages can be long and start/end mid-sentence.
+function hitExcerpt(hit) {
+  if (hit?.matchedPassage != null) {
+    const text = htmlToText(hit.matchedPassage);
+    // chunkIndex 0 is the opening of the article; anything else is a chunk
+    // from the middle, so mark it with a leading ellipsis. A missing
+    // chunkIndex is treated like 0 (nothing added).
+    const idx = Number(hit.chunkIndex);
+    return text && Number.isFinite(idx) && idx !== 0 ? `...${text}` : text;
+  }
+  return htmlToText(hit?.summary ?? hit?.body ?? hit?.bodySummary ?? '');
+}
+
 export class LwAiSearch extends LitElement {
 
   // The panel holds four questions at most — any beyond that are ignored.
@@ -4228,12 +4245,13 @@ export class LwAiSearch extends LitElement {
       const citations = Array.isArray(section.citations) ? section.citations : [];
       if (!citations.length) return { text: section.text };
 
+      // Citations are 0-based indices into `hits`; bounds-check each one.
       const articles = citations
-        .map(i => hits[i])
+        .map(i => (Number.isInteger(i) && i >= 0 && i < hits.length ? hits[i] : null))
         .filter(Boolean)
         .map(h => ({
           title: h.title ?? '',
-          excerpt: h.summary ?? h.bodySummary ?? h.body ?? '',
+          excerpt: hitExcerpt(h),
           image: (h.imageUrl ?? '').replace(/^\/\//, 'https://'),
           // Same protocol-relative fix the image above gets: a crawled
           // `//host/path` url left raw resolves against the demo host,
@@ -4534,6 +4552,9 @@ export class LwAiSearch extends LitElement {
         this._summaryParagraphs = this._mapAnswerToParagraphs(this._streamSections, this._streamHits ?? this._summaryHits ?? []);
         break;
       case 'error':
+        // In-band LLM failure after streaming started: sections already
+        // received stay valid, so only throw when nothing has arrived.
+        if (this._streamSections?.length) break;
         throw new Error(data?.message || 'summary stream error');
       case 'response_end':
       case 'done':
@@ -5088,7 +5109,7 @@ export class LwAiSearch extends LitElement {
       title: hit.title ?? hit.name ?? '',
       image,
       price: this._productPrice(hit),
-      description: htmlToText(hit.summary ?? hit.description ?? hit.body),
+      description: htmlToText(hit.matchedPassage ?? hit.summary ?? hit.description ?? hit.body),
       url: hit.canonicalUrl || hit.url || '',
       raw: hit,
     };
@@ -5160,9 +5181,9 @@ export class LwAiSearch extends LitElement {
     return {
       id: hit.id,
       title: hit.title ?? '',
-      // Flatten to plain text — summary/body may arrive as HTML
-      // (see htmlToText), and we never want tags shown on the row.
-      excerpt: htmlToText(hit.summary ?? hit.body),
+      // matchedPassage first, legacy fields as fallback; flattened to plain
+      // text (see hitExcerpt / htmlToText). Clamped to 3 lines by CSS.
+      excerpt: hitExcerpt(hit),
       image,
       author: hit.author?.name ?? hit.authorName ?? '',
       avatar: hit.author?.img ?? hit.authorImg ?? '',
@@ -5172,7 +5193,7 @@ export class LwAiSearch extends LitElement {
       readTime: hit.readTime ?? '',
       // kept for the detail view
       _body: hit.body ?? '',
-      _summary: hit.summary ?? '',
+      _summary: hit.matchedPassage ?? hit.summary ?? hit.body ?? hit.bodySummary ?? '',
       _topics: hit.topics ?? hit.tags ?? [],
     };
   }

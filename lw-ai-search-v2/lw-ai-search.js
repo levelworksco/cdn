@@ -539,7 +539,7 @@ function hitExcerpt(hit) {
     // chunkIndex 0 is the opening of the article; anything else is a chunk
     // from the middle, so mark it with a leading ellipsis. A missing
     // chunkIndex is treated like 0 (nothing added).
-    const idx = Number(hit.chunkIndex);
+    const idx = hit.chunkIndex == null ? 0 : Number(hit.chunkIndex);
     return text && Number.isFinite(idx) && idx !== 0 ? `...${text}` : text;
   }
   return htmlToText(hit?.summary ?? hit?.body ?? hit?.bodySummary ?? '');

@@ -5005,8 +5005,7 @@ export class LwAiSearch extends LitElement {
 
             ${this._stageSecondary && this._displayBlogs ? html`
               <div class="modal-blogs" style=${this._flowVars(this._displayProducts ? 450 : 0)}>
-                ${this._overview.length || (this._displayOverview && !this._overviewDone) ? html`
-                  <h3 class="further-reading">${flowWords('Related Blogs', this._flowName)}</h3>` : ''}
+                <h3 class="further-reading">${flowWords('Related Blogs', this._flowName)}</h3>
 
                 <div class="result-list">
                   ${this._results.length ? html`

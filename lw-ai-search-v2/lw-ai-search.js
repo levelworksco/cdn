@@ -567,6 +567,9 @@ export class LwAiSearch extends LitElement {
   // unreachable (droplet down: the connection just hangs) and the widget is
   // hidden. Kept a little above themeWaitMs.
   static backendTimeoutMs = 5000;
+  // Longest the launcher stays hidden after the settings arrive, waiting for
+  // the theme's Google Fonts. Past this it shows and the font swaps in later.
+  static fontWaitMs = 1500;
   // The remaining-characters count only appears this close to the limit
   // (as a share of it), so it is not ticking on every keystroke.
   static countdownShare = 0.1;
@@ -3098,7 +3101,9 @@ export class LwAiSearch extends LitElement {
       // The suggested queries run after the theme: the tenant-scoped
       // endpoint is not available on the deployed API yet, and the
       // fallback needs the ids the styling config returns.
-      this.refreshTheme().finally(() => this.refreshSuggestedQueries());
+      // Both requests go out together. Only the anonymous fallback needs the
+      // ids from the styling config, so only it waits for the theme.
+      this.refreshSuggestedQueries(this.refreshTheme());
     }
   }
 
@@ -3129,7 +3134,7 @@ export class LwAiSearch extends LitElement {
    * match is on searchIndexId/clientId from the styling config, never
    * on the name.
    */
-  async refreshSuggestedQueries() {
+  async refreshSuggestedQueries(themeReady = Promise.resolve()) {
     this._questionsAbortController?.abort();
     const controller = new AbortController();
     this._questionsAbortController = controller;
@@ -3167,6 +3172,8 @@ export class LwAiSearch extends LitElement {
       }
 
       // 2. anonymous list, matched on the ids the theme gave us
+      await themeReady;
+      if (this._questionsAbortController !== controller) return null;
       const listRes = await fetch(this._suggestedQueriesListEndpoint, {
         method: 'GET',
         headers: { 'Accept': 'application/json' },
@@ -3268,7 +3275,13 @@ export class LwAiSearch extends LitElement {
 
       // Keep the current Inter typography until every requested regular
       // font is ready, then apply the backend theme in one update.
-      await Promise.all(themeFontFamilies(nextResolvedTheme).map(loadGoogleFont));
+      // Capped: loadGoogleFont can take up to 10s when fonts.googleapis.com is
+      // slow or blocked, and the widget stays hidden until this returns. The
+      // font keeps loading in the background and swaps in when it arrives.
+      await Promise.race([
+        Promise.all(themeFontFamilies(nextResolvedTheme).map(loadGoogleFont)),
+        new Promise(resolve => setTimeout(resolve, LwAiSearch.fontWaitMs)),
+      ]);
       if (this._themeAbortController !== controller) return null;
 
       this._backendDown = false;

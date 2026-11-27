@@ -563,13 +563,6 @@ export class LwAiSearch extends LitElement {
   static maxQueryLength = 500;
   // Longest the launcher waits for the settings before showing the defaults.
   static themeWaitMs = 4000;
-  // How long the settings request may take before the backend is treated as
-  // unreachable (droplet down: the connection just hangs) and the widget is
-  // hidden. Kept a little above themeWaitMs.
-  static backendTimeoutMs = 5000;
-  // Longest the launcher stays hidden after the settings arrive, waiting for
-  // the theme's Google Fonts. Past this it shows and the font swaps in later.
-  static fontWaitMs = 1500;
   // The remaining-characters count only appears this close to the limit
   // (as a share of it), so it is not ticking on every keystroke.
   static countdownShare = 0.1;
@@ -706,10 +699,6 @@ export class LwAiSearch extends LitElement {
     _earlyOpened: { state: true },
     _backendTheme: { state: true },
     _themeSettled: { state: true },
-    // True when the settings request shows the backend is unreachable --
-    // timed out, network error, or a 5xx from the proxy in front of it. The
-    // widget renders nothing while it is set. See refreshTheme.
-    _backendDown: { state: true },
     _backendQuestions: { state: true },
     // Widget Styling Config › citationsStyle from the same backend config
     // response — see _resolvedCitations.
@@ -3026,13 +3015,9 @@ export class LwAiSearch extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     Promise.all(themeFontFamilies(this._resolvedTheme).map(loadGoogleFont));
-    // A missing key, or a slow request that still succeeds, must not leave the widget invisible.
+    // A slow or dead settings request must not leave the widget invisible.
     clearTimeout(this._themeTimer);
-    // A request still in flight is not revealed on this timer: if it ends up
-    // failing the widget stays hidden, and it times out on its own.
-    this._themeTimer = setTimeout(() => {
-      if (!this._themeAbortController) this._themeSettled = true;
-    }, LwAiSearch.themeWaitMs);
+    this._themeTimer = setTimeout(() => { this._themeSettled = true; }, LwAiSearch.themeWaitMs);
     this.addEventListener('mouseenter', this._onEnter);
     this.addEventListener('mouseleave', this._onLeave);
     this.addEventListener('focusin', this._onEnter);
@@ -3101,9 +3086,7 @@ export class LwAiSearch extends LitElement {
       // The suggested queries run after the theme: the tenant-scoped
       // endpoint is not available on the deployed API yet, and the
       // fallback needs the ids the styling config returns.
-      // Both requests go out together. Only the anonymous fallback needs the
-      // ids from the styling config, so only it waits for the theme.
-      this.refreshSuggestedQueries(this.refreshTheme());
+      this.refreshTheme().finally(() => this.refreshSuggestedQueries());
     }
   }
 
@@ -3134,7 +3117,7 @@ export class LwAiSearch extends LitElement {
    * match is on searchIndexId/clientId from the styling config, never
    * on the name.
    */
-  async refreshSuggestedQueries(themeReady = Promise.resolve()) {
+  async refreshSuggestedQueries() {
     this._questionsAbortController?.abort();
     const controller = new AbortController();
     this._questionsAbortController = controller;
@@ -3172,8 +3155,6 @@ export class LwAiSearch extends LitElement {
       }
 
       // 2. anonymous list, matched on the ids the theme gave us
-      await themeReady;
-      if (this._questionsAbortController !== controller) return null;
       const listRes = await fetch(this._suggestedQueriesListEndpoint, {
         method: 'GET',
         headers: { 'Accept': 'application/json' },
@@ -3214,7 +3195,6 @@ export class LwAiSearch extends LitElement {
     // supplied, render the frontend defaults plus any explicit local theme.
     if (!this.searchKey) {
       this._themeAbortController = null;
-      this._backendDown = false;
       this._backendTheme = {};
       this._backendCitationsStyle = null;
       this.promptType = null;
@@ -3227,12 +3207,6 @@ export class LwAiSearch extends LitElement {
     this._backendTheme = {};
     this._backendCitationsStyle = null;
     this.promptType = null;
-
-    // With the whole droplet down the connection never completes, so fetch
-    // would hang far past anything useful. Cut it off ourselves.
-    let timedOut = false;
-    const timeout = setTimeout(() => { timedOut = true; controller.abort(); },
-      LwAiSearch.backendTimeoutMs);
 
     try {
       const response = await fetch(this._themeEndpoint, {
@@ -3275,16 +3249,9 @@ export class LwAiSearch extends LitElement {
 
       // Keep the current Inter typography until every requested regular
       // font is ready, then apply the backend theme in one update.
-      // Capped: loadGoogleFont can take up to 10s when fonts.googleapis.com is
-      // slow or blocked, and the widget stays hidden until this returns. The
-      // font keeps loading in the background and swaps in when it arrives.
-      await Promise.race([
-        Promise.all(themeFontFamilies(nextResolvedTheme).map(loadGoogleFont)),
-        new Promise(resolve => setTimeout(resolve, LwAiSearch.fontWaitMs)),
-      ]);
+      await Promise.all(themeFontFamilies(nextResolvedTheme).map(loadGoogleFont));
       if (this._themeAbortController !== controller) return null;
 
-      this._backendDown = false;
       this._backendTheme = nextBackendTheme;
       this._backendCitationsStyle = nextCitationsStyle;
       this.promptType = nextPromptType;
@@ -3296,41 +3263,24 @@ export class LwAiSearch extends LitElement {
       }));
       return this._backendTheme;
     } catch (error) {
-      // Superseded by a newer request: that one decides.
-      if (this._themeAbortController !== controller) return null;
-      if (error.name === 'AbortError' && !timedOut) return null;
-
-      // Unreachable: our own timeout (droplet down), a thrown network error
-      // (no status at all -- also what a CORS-stripped nginx 502 looks like),
-      // or a 5xx (nginx up, backend down: 502/503/504). Other statuses, 4xx
-      // included, mean the backend answered, so the widget still shows.
-      const unavailable = timedOut || !error.status || error.status >= 500;
+      if (error.name === 'AbortError' || this._themeAbortController !== controller) return null;
 
       this._backendTheme = {};
       this._backendCitationsStyle = null;
       this.promptType = null;
-      this._backendDown = unavailable;
       this._themeSettled = true;
       this.dispatchEvent(new CustomEvent('lw-ai-theme-error', {
         detail: {
           index: this.searchIndex,
-          code: timedOut ? 'timeout' : (error.code || 'theme_request_failed'),
+          code: error.code || 'theme_request_failed',
           message: error.message,
           status: error.status || 0,
         },
         bubbles: true,
         composed: true,
       }));
-      if (unavailable) {
-        this.dispatchEvent(new CustomEvent('lw-ai-backend-unavailable', {
-          detail: { index: this.searchIndex, status: error.status || 0, timedOut },
-          bubbles: true,
-          composed: true,
-        }));
-      }
       return null;
     } finally {
-      clearTimeout(timeout);
       if (this._themeAbortController === controller) this._themeAbortController = null;
     }
   }
@@ -4743,9 +4693,6 @@ export class LwAiSearch extends LitElement {
   };
 
   render() {
-    // Backend unreachable: nothing to show. Rendering nothing also closes the
-    // modal, and the bar's reserved page space is released in updated().
-    if (this._backendDown) return html``;
     return html`
       <div class="ai-search-launcher ${this._themeSettled ? '' : 'is-theme-pending'}"
            style=${this._themeStyle}>
